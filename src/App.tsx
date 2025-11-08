@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { AppProvider } from './contexts/AppContext';
-import ClassDashboard from './components/ClassDashboard';
+import { AppProvider } from '../contexts/AppContext';
+import ClassDashboard from '../components/ClassDashboard';
 // FIX: Corrected import path for ManagementConsole to be explicit.
-import ManagementConsole from './components/ManagementConsole';
+import ManagementConsole from '../components/ManagementConsole';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<'dashboard' | 'console'>('dashboard');

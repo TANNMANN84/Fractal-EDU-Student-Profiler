@@ -1,8 +1,6 @@
 import type { AppData, FileUpload } from '../types';
 import { DEFAULT_APP_DATA } from '../constants';
 
-declare var pako: any;
-
 const STORAGE_KEY = 'studentProfilerData';
 const DB_NAME = 'StudentProfilerFiles';
 const STORE_NAME = 'files';

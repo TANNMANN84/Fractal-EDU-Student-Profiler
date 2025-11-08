@@ -2,8 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import type { AppData, Student, ClassData } from '../types';
-
-declare var JSZip: any;
+import JSZip from 'jszip'; // Import JSZip
 
 interface RolloverModalProps {
     isOpen: boolean;
