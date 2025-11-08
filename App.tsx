@@ -14,7 +14,7 @@ const App: React.FC = () => {
         <header className="bg-white shadow-md sticky top-0 z-20">
           <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-3">
-              <h1 className="text-xl font-bold text-indigo-600">Student Profiler</h1>
+              <h1 className="text-xl font-bold text-indigo-600">Fractal EDU - Student Profiler</h1>
               <div className="flex space-x-2 rounded-lg bg-gray-100 p-1">
                 <button
                   onClick={() => setActiveView('dashboard')}
