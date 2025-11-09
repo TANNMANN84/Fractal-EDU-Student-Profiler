@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
+import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 // FIX: Corrected import paths to be relative.
 import type { ClassData, Student, MonitoringDoc } from '../types';
 import { useAppContext } from '../contexts/AppContext';
@@ -17,6 +17,7 @@ import ClassAnalytics from './ClassAnalytics';
 import ReportView from './ReportView';
 import SeatingPlanView from './SeatingPlanView';
 import ConfirmationModal from './ConfirmationModal';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 
 interface ClassViewProps {
@@ -40,6 +41,23 @@ const SORT_OPTIONS = {
     'firstName-desc': 'First Name (Z-A)',
     'gender-asc': 'Gender',
     'custom': 'Custom Order',
+};
+
+const SortableStudentCard: React.FC<{student: Student, isRemoveMode: boolean, onCardClick: () => void, onRemoveClick: () => void}> = ({ student, isRemoveMode, onCardClick, onRemoveClick }) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+    } = useSortable({ id: student.studentId });
+
+    const style = {
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+        transition,
+    };
+
+    return <div ref={setNodeRef} style={style} {...attributes} {...listeners}><StudentCard student={student} isRemoveMode={isRemoveMode} onClick={onCardClick} onRemoveFromClass={onRemoveClick} /></div>
 };
 
 const ClassView: React.FC<ClassViewProps> = ({ classData }) => {
@@ -162,15 +180,18 @@ const ClassView: React.FC<ClassViewProps> = ({ classData }) => {
     setIsReportGeneratorOpen(false);
   };
   
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
+  const onDragEnd = (event: DragEndEvent) => {
+    const {active, over} = event;
+    if (!over || active.id === over.id) return;
 
     // Reorder the array that is currently being displayed
     const reorderedStudents: Student[] = Array.from(sortedStudentsInClass);
-    const [removed] = reorderedStudents.splice(result.source.index, 1);
-    if (!removed) return; // Should not happen if dragging a valid item
+    const oldIndex = reorderedStudents.findIndex(s => s.studentId === active.id);
+    const newIndex = reorderedStudents.findIndex(s => s.studentId === over.id);
+    const [removed] = reorderedStudents.splice(oldIndex, 1);
+    if (!removed) return;
 
-    reorderedStudents.splice(result.destination.index, 0, removed);
+    reorderedStudents.splice(newIndex, 0, removed);
     const reorderedStudentIds = reorderedStudents.map(s => s.studentId);
     
     const updatedClass = {
@@ -196,37 +217,21 @@ const ClassView: React.FC<ClassViewProps> = ({ classData }) => {
     switch(viewMode) {
         case 'Default Grid':
             return (
-                <DragDropContext onDragEnd={onDragEnd}>
-                    <Droppable droppableId="student-grid">
-                        {(provided) => (
-                            <div
-                                {...provided.droppableProps}
-                                ref={provided.innerRef}
-                                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-                            >
-                                {sortedStudentsInClass.map((student, index) => (
-                                    <Draggable draggableId={student.studentId} index={index}>
-                                        {(provided, snapshot) => (
-                                            <div
-                                                key={student.studentId}
-                                                ref={provided.innerRef}
-                                                {...provided.draggableProps}
-                                                {...provided.dragHandleProps}
-                                            >
-                                                <StudentCard student={student}
-                                                    isRemoveMode={isRemoveMode}
-                                                    onClick={() => !isRemoveMode && setSelectedStudent(student)}
-                                                    onRemoveFromClass={() => handleRemoveClick(student)}
-                                                />
-                                            </div>
-                                        )}
-                                    </Draggable>
-                                ))}
-                                {provided.placeholder}
-                            </div>
-                        )}
-                    </Droppable>
-                </DragDropContext>
+                <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+                    <SortableContext items={sortedStudentsInClass.map(s => s.studentId)} strategy={verticalListSortingStrategy}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {sortedStudentsInClass.map((student) => (
+                                <SortableStudentCard
+                                    key={student.studentId}
+                                    student={student}
+                                    isRemoveMode={isRemoveMode}
+                                    onCardClick={() => !isRemoveMode && setSelectedStudent(student)}
+                                    onRemoveClick={() => handleRemoveClick(student)}
+                                />
+                            ))}
+                        </div>
+                    </SortableContext>
+                </DndContext>
             );
         case 'List View':
             return <StudentListView students={sortedStudentsInClass} onSelectStudent={setSelectedStudent} />;
