@@ -65,8 +65,7 @@ const AddEvidenceModal: React.FC<AddEvidenceModalProps> = ({ onClose, onSaveLog 
 
   const handleToggleAdjustment = (adjustment: string) => {
     setAdjustmentsUsed(prev =>
-// FIX: Corrected typo 'a' to 'adjustment'
-      prev.includes(adjustment) ? prev.filter(a => a !== adjustment) : [...prev, adjustment]
+      prev.includes(adjustment) ? prev.filter(adj => adj !== adjustment) : [...prev, adjustment]
     );
   };
   
@@ -93,17 +92,17 @@ const AddEvidenceModal: React.FC<AddEvidenceModalProps> = ({ onClose, onSaveLog 
   };
 
   return (
-    <dialog ref={dialogRef} onClose={onClose} className="p-0 rounded-lg shadow-xl w-11/12 max-w-2xl backdrop:bg-black backdrop:opacity-50 border border-gray-300">
-      <div className="flex justify-between items-center p-4 bg-gray-100 border-b border-gray-200 sticky top-0 z-10">
-        <h2 className="text-xl font-bold text-gray-900">Add Evidence Log Entry</h2>
-        <button onClick={handleClose} className="text-2xl font-light text-gray-600 hover:text-gray-900 leading-none">&times;</button>
+    <dialog ref={dialogRef} onClose={onClose} className="p-0 rounded-lg shadow-xl w-11/12 max-w-2xl backdrop:bg-black backdrop:opacity-50 border border-gray-300 dark:border-gray-600">
+      <div className="flex justify-between items-center p-4 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-200">Add Evidence Log Entry</h2>
+        <button onClick={handleClose} className="text-2xl font-light text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 leading-none">&times;</button>
       </div>
-      <div className="p-6 bg-white space-y-4 text-gray-900" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+      <div className="p-6 bg-white dark:bg-gray-900 space-y-4 text-gray-900 dark:text-gray-200" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags</label>
              <div className="flex flex-wrap gap-2">
                 {EVIDENCE_TAGS.map(tag => (
-                    <button key={tag} onClick={() => handleToggleTag(tag)} className={`px-3 py-1 text-sm font-medium rounded-full border ${tags.includes(tag) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white hover:bg-gray-100 border-gray-300'}`}>
+                    <button key={tag} onClick={() => handleToggleTag(tag)} className={`px-3 py-1 text-sm font-medium rounded-full border ${tags.includes(tag) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600'}`}>
                         {tag}
                     </button>
                 ))}
@@ -111,33 +110,33 @@ const AddEvidenceModal: React.FC<AddEvidenceModalProps> = ({ onClose, onSaveLog 
         </div>
         {tags.includes('NCCD') && (
             <div>
-                <label htmlFor="nccdLevel" className="block text-sm font-medium text-gray-700">NCCD Adjustment Level</label>
-                <select id="nccdLevel" value={adjustmentLevel} onChange={e => setAdjustmentLevel(e.target.value)} className="mt-1 block w-full p-2 bg-white rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <label htmlFor="nccdLevel" className="block text-sm font-medium text-gray-700 dark:text-gray-300">NCCD Adjustment Level</label>
+                <select id="nccdLevel" value={adjustmentLevel} onChange={e => setAdjustmentLevel(e.target.value)} className="mt-1 block w-full p-2 bg-white dark:bg-gray-700 dark:text-gray-200 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     <option value="" disabled>Select a level...</option>
                     {NCCD_LEVELS.map(level => <option key={level} value={level}>{level}</option>)}
                 </select>
             </div>
         )}
         <div>
-            <label htmlFor="note" className="block text-sm font-medium text-gray-700">Note / Observation</label>
-            <textarea id="note" value={note} onChange={e => setNote(e.target.value)} rows={5} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 bg-white" required />
+            <label htmlFor="note" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Note / Observation</label>
+            <textarea id="note" value={note} onChange={e => setNote(e.target.value)} rows={5} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 bg-white dark:bg-gray-700" required />
         </div>
         <div>
-            <label className="block text-sm font-medium text-gray-700">Adjustments Used (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Adjustments Used (optional)</label>
             {renderAdjustmentChecklists()}
         </div>
          <div>
-            <label htmlFor="evidenceLink" className="block text-sm font-medium text-gray-700">Evidence Link (optional)</label>
-            <input type="url" id="evidenceLink" value={evidenceLink} onChange={e => setEvidenceLink(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 bg-white" placeholder="https://..." />
+            <label htmlFor="evidenceLink" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Evidence Link (optional)</label>
+            <input type="url" id="evidenceLink" value={evidenceLink} onChange={e => setEvidenceLink(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 bg-white dark:bg-gray-700" placeholder="https://..." />
         </div>
         <div>
-            <label className="block text-sm font-medium text-gray-700">Evidence File (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Evidence File (optional)</label>
             <InlineFileUpload file={evidenceFile} onUpload={setEvidenceFile} onRemove={() => setEvidenceFile(null)} />
         </div>
       </div>
-      <div className="p-4 bg-gray-100 border-t border-gray-200 flex justify-end gap-2 sticky bottom-0">
-        <button type="button" onClick={handleClose} className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 font-semibold transition-colors">Cancel</button>
-        <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold transition-colors">Save Entry</button>
+      <div className="p-4 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2 sticky bottom-0">
+        <button type="button" onClick={handleClose} className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 font-semibold transition-colors">Cancel</button>
+        <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-semibold transition-colors">Save Entry</button>
       </div>
     </dialog>
   );
