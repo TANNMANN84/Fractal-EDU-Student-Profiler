@@ -13,25 +13,25 @@ interface StudentProfileModalProps {
 
 const DetailItem: React.FC<{ label: string, value: React.ReactNode }> = ({ label, value }) => (
     <div>
-        <dt className="text-sm font-medium text-gray-500">{label}</dt>
-        <dd className="mt-1 text-sm text-gray-900">{value || 'N/A'}</dd>
+        <dt className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</dt>
+        <dd className="mt-1 text-sm text-gray-900 dark:text-gray-200">{value || 'N/A'}</dd>
     </div>
 );
 
 const NaplanBandBadge: React.FC<{ band: string }> = ({ band }) => {
-    let colorClasses = 'bg-gray-100 text-gray-800'; // Default for "Not Assessed"
+    let colorClasses = 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'; // Default for "Not Assessed"
     switch (band) {
         case 'Exceeding':
-            colorClasses = 'bg-blue-100 text-blue-800';
+            colorClasses = 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300';
             break;
         case 'Strong':
-            colorClasses = 'bg-green-100 text-green-800';
+            colorClasses = 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300';
             break;
         case 'Developing':
-            colorClasses = 'bg-yellow-100 text-yellow-800';
+            colorClasses = 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300';
             break;
         case 'Needs additional support':
-            colorClasses = 'bg-red-100 text-red-800';
+            colorClasses = 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300';
             break;
     }
 
@@ -80,27 +80,27 @@ const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ student, onCl
 
   return (
     <>
-      <dialog ref={dialogRef} onClose={onClose} className="p-0 rounded-lg shadow-xl w-11/12 max-w-4xl backdrop:bg-black backdrop:opacity-50 border border-gray-300">
-        <div className="sticky top-0 z-10 bg-gray-100 p-4 border-b border-gray-200">
+      <dialog ref={dialogRef} onClose={onClose} className="p-0 rounded-lg shadow-xl w-11/12 max-w-4xl backdrop:bg-black backdrop:opacity-50 border border-gray-300 dark:border-gray-700">
+        <div className="sticky top-0 z-10 bg-gray-100 dark:bg-gray-800 p-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                     <h2 className="text-2xl font-bold text-gray-900">{currentStudentState.firstName} {currentStudentState.lastName}</h2>
-                     <button onClick={() => setIsEditing(true)} className="bg-gray-200 text-gray-800 px-3 py-1 rounded-md hover:bg-gray-300 text-sm font-semibold">
+                     <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-200">{currentStudentState.firstName} {currentStudentState.lastName}</h2>
+                     <button onClick={() => setIsEditing(true)} className="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 text-sm font-semibold">
                         Edit Profile
                     </button>
-                    <button onClick={() => setIsAddingEvidence(true)} className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm font-semibold">
+                    <button onClick={() => setIsAddingEvidence(true)} className="bg-blue-600 dark:bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 text-sm font-semibold">
                         Quick Add Evidence
                     </button>
                 </div>
-                <button onClick={handleClose} className="text-2xl font-light text-gray-600 hover:text-gray-900 leading-none">&times;</button>
+                <button onClick={handleClose} className="text-2xl font-light text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 leading-none">&times;</button>
             </div>
         </div>
 
-        <div className="p-6 bg-white text-gray-900" style={{maxHeight: '75vh', overflowY: 'auto'}}>
+        <div className="p-6 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200" style={{maxHeight: '75vh', overflowY: 'auto'}}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                    <div className="bg-gray-50 p-4 rounded-lg border">
-                        <h3 className="font-semibold text-lg mb-2 text-gray-800">Profile Details</h3>
+                    <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border dark:border-gray-700">
+                        <h3 className="font-semibold text-lg mb-2 text-gray-800 dark:text-gray-200">Profile Details</h3>
                         <dl className="space-y-2">
                            <DetailItem label="Current Year Group" value={currentStudentState.profile.currentYearGroup} />
                            <DetailItem label="Status" value={currentStudentState.profile.status} />
@@ -113,11 +113,11 @@ const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ student, onCl
                     </div>
                 </div>
                 <div className="space-y-4">
-                     <div className="bg-gray-50 p-4 rounded-lg border">
-                        <h3 className="font-semibold text-lg mb-2 text-gray-800">Academic Snapshot</h3>
+                     <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border dark:border-gray-700">
+                        <h3 className="font-semibold text-lg mb-2 text-gray-800 dark:text-gray-200">Academic Snapshot</h3>
                         {currentStudentState.academic.naplan && (
                             <>
-                                <h4 className="font-medium text-md text-gray-700 mt-1">Year 7 NAPLAN</h4>
+                                <h4 className="font-medium text-md text-gray-700 dark:text-gray-300 mt-1">Year 7 NAPLAN</h4>
                                 <dl className="space-y-1 pl-2 border-l mt-1">
                                    <DetailItem label="Reading" value={<NaplanBandBadge band={currentStudentState.academic.naplan.year7.reading} />} />
                                    <DetailItem label="Writing" value={<NaplanBandBadge band={currentStudentState.academic.naplan.year7.writing} />} />
@@ -125,7 +125,7 @@ const StudentProfileModal: React.FC<StudentProfileModalProps> = ({ student, onCl
                                 </dl>
                                 {currentStudentState.profile.currentYearGroup >= 9 && (
                                     <>
-                                        <h4 className="font-medium text-md text-gray-700 mt-3">Year 9 NAPLAN</h4>
+                                        <h4 className="font-medium text-md text-gray-700 dark:text-gray-300 mt-3">Year 9 NAPLAN</h4>
                                         <dl className="space-y-1 pl-2 border-l mt-1">
                                         <DetailItem label="Reading" value={<NaplanBandBadge band={currentStudentState.academic.naplan.year9.reading} />} />
                                         <DetailItem label="Writing" value={<NaplanBandBadge band={currentStudentState.academic.naplan.year9.writing} />} />

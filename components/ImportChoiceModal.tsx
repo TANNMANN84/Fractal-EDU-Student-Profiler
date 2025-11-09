@@ -34,6 +34,7 @@ const ImportChoiceModal: React.FC<ImportChoiceModalProps> = ({ packageData, impo
                     <div className="mt-4 space-y-3">
                         <button
                             onClick={() => onReview(reviewPkg)}
+                            type="button"
                             className="w-full text-left p-4 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
                         >
                             <h3 className="font-bold text-blue-800">Open in Review Mode</h3>
@@ -42,6 +43,7 @@ const ImportChoiceModal: React.FC<ImportChoiceModalProps> = ({ packageData, impo
                         
                         <button
                             onClick={() => onMerge(reviewPkg)}
+                            type="button"
                             className="w-full text-left p-4 border border-green-300 rounded-lg hover:bg-green-50 transition-colors"
                         >
                             <h3 className="font-bold text-green-800">Merge Signatures</h3>
@@ -62,6 +64,7 @@ const ImportChoiceModal: React.FC<ImportChoiceModalProps> = ({ packageData, impo
                     <div className="mt-6 flex justify-end">
                          <button
                             onClick={() => onMergeStudents(packageData)}
+                            type="button"
                             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-semibold"
                         >
                             Confirm and Merge Students

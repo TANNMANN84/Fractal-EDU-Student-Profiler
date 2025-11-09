@@ -29,6 +29,14 @@ export interface ClassData {
   teacher: string;
   studentIds: string[];
   status: 'Active' | 'Archived';
+  studentSortOrder?: string[]; // Optional: For custom drag-and-drop ordering
+  seatingChart?: SeatingChart;
+}
+
+export interface SeatingChart {
+  rows: number;
+  seatsPerRow: number;
+  arrangement: (string | null)[][];
 }
 
 export interface MonitoringDoc {
@@ -90,6 +98,7 @@ export interface StudentWellbeing {
   deescalationStrategies: string[];
   medicalNeeds: string[];
   attendancePercent: number;
+  evidenceLog?: EvidenceLogEntry[];
   sentralBehaviourSummary: string;
   notes: NoteEntry[];
 }
@@ -263,6 +272,19 @@ export interface ClassTransferPackage {
     students: Student[];
     monitoringDoc: MonitoringDoc | null;
     files: { [id:string]: string };
+}
+
+export interface ReportOptions {
+    profileDetails: boolean;
+    wellbeingPlans: boolean;
+    wellbeingNotes: boolean;
+    academicNaplan: boolean;
+    academicGrades: boolean;
+    academicNotes: boolean;
+    hpgeProfile: boolean;
+    hpgeNotes: boolean;
+    workSamples: boolean;
+    evidenceLog: boolean;
 }
 
 export interface BackupFile {

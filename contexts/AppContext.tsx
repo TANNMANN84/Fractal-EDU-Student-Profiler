@@ -3,36 +3,16 @@ import type { AppData, MonitoringDoc, Term, Student, NaplanDataSet, EvidenceLogE
 import { storageService } from '../services/storageService';
 import { BLANK_MONITORING_DOC_SKELETON } from '../constants';
 
+type Theme = 'light' | 'dark';
+
 interface AppContextType {
   data: AppData | null;
   saveData: (data: AppData) => void;
+  theme: Theme;
+  toggleTheme: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
-
-
-// Helper to check for old file format
-let hasCheckedForOldFiles = false;
-const hasOldFileFormat = (obj: any): boolean => {
-    if (hasCheckedForOldFiles) return false;
-
-    if (Array.isArray(obj)) {
-        for (const item of obj) {
-            if (hasOldFileFormat(item)) return true;
-        }
-    } else if (obj && typeof obj === 'object') {
-        if (obj.hasOwnProperty('name') && obj.hasOwnProperty('content') && !obj.hasOwnProperty('id')) {
-            // Found an old FileUpload object
-            return true;
-        }
-        for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                if (hasOldFileFormat(obj[key])) return true;
-            }
-        }
-    }
-    return false;
-};
 
 // New async migration function for files
 const migrateFilesToDb = async (data: any): Promise<AppData> => {
@@ -170,25 +150,45 @@ const migrateData = (data: any): [AppData, boolean] => {
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [data, setData] = useState<AppData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Get theme from localStorage or default to system preference
+    const savedTheme = localStorage.getItem('theme') as Theme;
+    if (savedTheme) {
+        return savedTheme;
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+      // Apply theme class to the root element and save to localStorage
+      const root = window.document.documentElement;
+      root.classList.remove(theme === 'dark' ? 'light' : 'dark');
+      root.classList.add(theme);
+      localStorage.setItem('theme', theme);
+  }, [theme]);
+
+
 
   useEffect(() => {
     const initializeApp = async () => {
       await storageService.initDB();
-      let loadedData = storageService.loadData();
+      let loadedData: any = storageService.loadData();
       
-      if (hasOldFileFormat(loadedData)) {
+      // Check for data version to decide on file migration
+      if (!loadedData?.version || loadedData.version < 2) {
           console.log("Starting file migration from localStorage to IndexedDB...");
           const fileMigratedData = await migrateFilesToDb(loadedData);
-          const [finalMigratedData] = migrateData(fileMigratedData);
+          const [structuralMigratedData] = migrateData(fileMigratedData);
+          const finalMigratedData = { ...structuralMigratedData, version: 2 };
           storageService.saveData(finalMigratedData);
           setData(finalMigratedData);
-          hasCheckedForOldFiles = true;
           alert("Application data has been upgraded to a new, more efficient format. This is a one-time process.");
       } else {
           // No file migration needed, just run structural migrations
           const [structuralMigratedData, needsSave] = migrateData(loadedData);
           if (needsSave) {
-              storageService.saveData(structuralMigratedData);
+              // Preserve or update version number, ensuring 'version' is only added if it exists in loadedData
+              storageService.saveData({ ...structuralMigratedData, ...(loadedData.version && { version: loadedData.version }) });
           }
           setData(structuralMigratedData);
       }
@@ -203,7 +203,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setData(newData);
   };
 
-  const contextValue = useMemo(() => ({ data, saveData }), [data]);
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
+  const contextValue = useMemo(() => ({ data, saveData, theme, toggleTheme }), [data, theme]);
   
   if (isLoading) {
       return <div className="p-8 text-center">Loading and preparing data...</div>;

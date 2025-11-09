@@ -11,7 +11,7 @@ import GroupingView from './GroupingView';
 // FIX: Corrected import path for JuniorMonitoring to be explicit.
 import JuniorMonitoring from './JuniorMonitoring';
 import { BLANK_MONITORING_DOC_SKELETON } from '../constants';
-import StudentListView from './StudentListView';
+import StudentListView, { ReportOptions } from './StudentListView';
 import ReportGeneratorModal from './ReportGeneratorModal';
 import ClassAnalytics from './ClassAnalytics';
 import ReportView from './ReportView';
@@ -80,7 +80,7 @@ const ClassView: React.FC<ClassViewProps> = ({ classData }) => {
 
   // Report Generation State
   const [isReportGeneratorOpen, setIsReportGeneratorOpen] = useState(false);
-  const [reportToShow, setReportToShow] = useState<{ students: Student[], options: ErrorOptions } | null>(null);
+  const [reportToShow, setReportToShow] = useState<{ students: Student[], options: ReportOptions } | null>(null);
 
   const studentsInClass = useMemo(() => {
     return (data?.students.filter(student => classData.studentIds.includes(student.studentId))) ?? [];
@@ -174,7 +174,7 @@ const ClassView: React.FC<ClassViewProps> = ({ classData }) => {
      }
   };
   
-  const handleGenerateReport = (selectedStudentIds: string[], options: ErrorOptions) => {
+  const handleGenerateReport = (selectedStudentIds: string[], options: ReportOptions) => {
     const selectedStudents = studentsInClass.filter(s => selectedStudentIds.includes(s.studentId));
     setReportToShow({ students: selectedStudents, options });
     setIsReportGeneratorOpen(false);

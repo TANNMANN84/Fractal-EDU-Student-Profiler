@@ -9,6 +9,7 @@ import RolloverModal from './RolloverModal';
 import ReviewModal from './ReviewModal';
 import ImportChoiceModal from './ImportChoiceModal';
 import ConfirmationModal from './ConfirmationModal';
+import ThemeToggle from './ThemeToggle';
 import { BLANK_STUDENT } from '../constants';
 import { storageService } from '../services/storageService';
 
@@ -33,7 +34,7 @@ const updateFileIdsInObject = (obj: any, fileIdMap: { [oldId: string]: string })
 };
 
 const ManagementConsole: React.FC = () => {
-    const { data, saveData } = useAppContext();
+    const { data, saveData, theme, toggleTheme } = useAppContext();
     
     const defaultTab = data?.teacherProfile?.name ? 'Students' : 'Profile';
     const [activeTab, setActiveTab] = useState<TabName>(defaultTab);
@@ -334,8 +335,7 @@ const ManagementConsole: React.FC = () => {
     const NavButton: React.FC<{ name: TabName, color: string }> = ({ name, color }) => (
         <button
             onClick={() => setActiveTab(name)}
-            className={`w-full text-left font-semibold p-3 rounded-md transition-colors text-sm ${
-                activeTab === name ? `bg-${color}-100 text-${color}-700` : `text-gray-600 hover:bg-gray-100`
+            className={`w-full text-left font-semibold p-3 rounded-md transition-colors text-sm ${ activeTab === name ? `bg-${color}-100 text-${color}-700 dark:bg-gray-900 dark:text-${color}-400` : `text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700`
             }`}
         >
             {name}
@@ -344,49 +344,49 @@ const ManagementConsole: React.FC = () => {
 
     return (
         <div className="flex flex-col md:flex-row gap-8 items-start">
-            <nav className="w-full md:w-64 bg-white p-4 rounded-lg shadow space-y-2 flex-shrink-0">
+            <nav className="w-full md:w-64 bg-white dark:bg-gray-800 p-4 rounded-lg shadow space-y-2 flex-shrink-0">
                 <NavButton name="Profile" color="blue" />
                 <NavButton name="Students" color="green" />
                 <NavButton name="Classes" color="purple" />
                 <NavButton name="System" color="red" />
             </nav>
 
-            <div className="flex-1 w-full bg-white p-6 rounded-lg shadow">
+            <div className="flex-1 w-full bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                 {activeTab === 'Profile' && (
                     <div className="space-y-4">
-                        <h2 className="text-2xl font-bold text-gray-800">My Teacher Profile</h2>
-                        <p className="text-gray-600">Manage your personal details. This information will be used to auto-fill your name when creating classes and signing documents.</p>
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">My Teacher Profile</h2>
+                        <p className="text-gray-600 dark:text-gray-400">Manage your personal details. This information will be used to auto-fill your name when creating classes and signing documents.</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
                              <div>
-                                <label className="block text-sm font-medium text-gray-700">Name</label>
-                                <input type="text" value={teacherProfile.name} onChange={e => setTeacherProfile(p => ({ ...p, name: e.target.value }))} className="mt-1 w-full p-2 bg-white border border-gray-300 rounded-md shadow-sm"/>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                                <input type="text" value={teacherProfile.name} onChange={e => setTeacherProfile(p => ({ ...p, name: e.target.value }))} className="mt-1 w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm"/>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Email (optional)</label>
-                                <input type="email" value={teacherProfile.email} onChange={e => setTeacherProfile(p => ({ ...p, email: e.target.value }))} className="mt-1 w-full p-2 bg-white border border-gray-300 rounded-md shadow-sm"/>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email (optional)</label>
+                                <input type="email" value={teacherProfile.email} onChange={e => setTeacherProfile(p => ({ ...p, email: e.target.value }))} className="mt-1 w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm"/>
                             </div>
                         </div>
                         <div className="flex justify-end">
-                            <button onClick={handleSaveTeacherProfile} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold">Save Profile</button>
+                            <button onClick={handleSaveTeacherProfile} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-semibold">Save Profile</button>
                         </div>
                     </div>
                 )}
                 {activeTab === 'Students' && (
                     <div className="space-y-4">
-                        <h2 className="text-2xl font-bold text-gray-800">Student Management</h2>
-                        <p className="text-gray-600">Add, manage, and import students. To edit a student's full profile, find them in a class on the Dashboard.</p>
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Student Management</h2>
+                        <p className="text-gray-600 dark:text-gray-400">Add, manage, and import students. To edit a student's full profile, find them in a class on the Dashboard.</p>
                         <div className="flex flex-wrap gap-2 pt-4 border-t">
-                            <button onClick={() => setIsAddStudentOpen(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold">Add New Student</button>
-                            <button onClick={() => setIsManageStudentsOpen(true)} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold">Manage All Students</button>
+                            <button onClick={() => setIsAddStudentOpen(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-semibold">Add New Student</button>
+                            <button onClick={() => setIsManageStudentsOpen(true)} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 font-semibold">Manage All Students</button>
                         </div>
-                        <div className="p-4 bg-gray-50 border rounded-lg mt-4">
-                            <h3 className="font-semibold text-gray-800">Bulk Import from CSV</h3>
-                            <p className="text-sm text-gray-600 mt-1">Bulk-create student profiles by uploading a CSV file. Download the template to ensure your column headers are correct.</p>
+                        <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border dark:border-gray-700 rounded-lg mt-4">
+                            <h3 className="font-semibold text-gray-800 dark:text-gray-200">Bulk Import from CSV</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Bulk-create student profiles by uploading a CSV file. Download the template to ensure your column headers are correct.</p>
                              <div className="mt-3 flex items-center gap-2">
-                                <button onClick={handleDownloadTemplate} className="px-4 py-2 bg-gray-600 text-white text-sm font-semibold rounded-md hover:bg-gray-700">Download CSV Template</button>
-                                <div className="text-sm text-gray-500">
+                                <button onClick={handleDownloadTemplate} className="px-4 py-2 bg-gray-600 dark:bg-gray-500 text-white text-sm font-semibold rounded-md hover:bg-gray-700 dark:hover:bg-gray-600">Download CSV Template</button>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                     <p className="font-medium">Then, go to the 'System' tab to upload your file.</p>
-                                    <button onClick={() => setActiveTab('System')} className="text-blue-600 hover:underline">Go to System Tab &rarr;</button>
+                                    <button onClick={() => setActiveTab('System')} className="text-blue-600 dark:text-blue-400 hover:underline">Go to System Tab &rarr;</button>
                                 </div>
                             </div>
                         </div>
@@ -394,32 +394,40 @@ const ManagementConsole: React.FC = () => {
                 )}
                 {activeTab === 'Classes' && (
                      <div className="space-y-4">
-                        <h2 className="text-2xl font-bold text-gray-800">Class Management</h2>
-                        <p className="text-gray-600">Create new class shells and manage existing ones (edit, archive, delete).</p>
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Class Management</h2>
+                        <p className="text-gray-600 dark:text-gray-400">Create new class shells and manage existing ones (edit, archive, delete).</p>
                         <div className="flex flex-wrap gap-2 pt-4 border-t">
-                            <button onClick={() => setIsCreateClassOpen(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold">Create New Class</button>
-                            <button onClick={() => setIsClassAdminOpen(true)} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold">Manage All Classes</button>
+                            <button onClick={() => setIsCreateClassOpen(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-semibold">Create New Class</button>
+                            <button onClick={() => setIsClassAdminOpen(true)} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 font-semibold">Manage All Classes</button>
                         </div>
                     </div>
                 )}
                 {activeTab === 'System' && (
                     <div className="space-y-4">
-                        <h2 className="text-2xl font-bold text-gray-800">System Actions</h2>
-                        <p className="text-gray-600">Import/export data and perform system-wide actions like the annual rollover.</p>
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">System Actions</h2>
+                        <p className="text-gray-600 dark:text-gray-400">Manage application settings, import/export data, and perform system-wide actions like the annual rollover.</p>
                         <input type="file" ref={fileInputRef} className="hidden" accept=".json,.csv,.profiler-review" onChange={handleFileImport} />
                         
-                        <div className="p-4 bg-gray-50 border rounded-lg mt-4 space-y-3">
-                             <h3 className="font-semibold text-gray-800">Data Import & Export</h3>
-                             <p className="text-sm text-gray-600">Use the "Import Data File" button to load a full backup, a student CSV, a review package, or a transfer package. Use "Export Full Backup" to save a copy of all your data.</p>
+                        <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border dark:border-gray-700 rounded-lg mt-4 space-y-3">
+                             <h3 className="font-semibold text-gray-800 dark:text-gray-200">Appearance</h3>
+                             <div className="flex items-center justify-between">
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Toggle between light and dark mode.</p>
+                                <ThemeToggle />
+                             </div>
+                        </div>
+
+                        <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border dark:border-gray-700 rounded-lg mt-4 space-y-3">
+                             <h3 className="font-semibold text-gray-800 dark:text-gray-200">Data Import & Export</h3>
+                             <p className="text-sm text-gray-600 dark:text-gray-400">Use the "Import Data File" button to load a full backup, a student CSV, a review package, or a transfer package. Use "Export Full Backup" to save a copy of all your data.</p>
                              <div className="flex flex-wrap gap-2">
-                                <button onClick={handleImportClick} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 font-semibold">Import Data File...</button>
-                                <button onClick={handleExport} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-semibold">Export Full Backup</button>
+                                <button onClick={handleImportClick} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 font-semibold">Import Data File...</button>
+                                <button onClick={handleExport} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 font-semibold">Export Full Backup</button>
                             </div>
                         </div>
                         
-                         <div className="p-4 bg-gray-50 border rounded-lg mt-4 space-y-3">
-                             <h3 className="font-semibold text-gray-800">Annual School Rollover</h3>
-                             <p className="text-sm text-gray-600">Run the guided process to prepare the application for a new school year. This will promote students, export their profiles, and archive classes.</p>
+                         <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border dark:border-gray-700 rounded-lg mt-4 space-y-3">
+                             <h3 className="font-semibold text-gray-800 dark:text-gray-200">Annual School Rollover</h3>
+                             <p className="text-sm text-gray-600 dark:text-gray-400">Run the guided process to prepare the application for a new school year. This will promote students, export their profiles, and archive classes.</p>
                              <button onClick={() => setIsRolloverOpen(true)} className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 font-semibold">Prepare for New School Year</button>
                         </div>
                         

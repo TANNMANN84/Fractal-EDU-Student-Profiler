@@ -36,14 +36,14 @@ const InlineFileUpload: React.FC<InlineFileUploadProps> = ({ file, onUpload, onR
 
     if (file) {
         return (
-            <div className="flex items-center justify-between p-2 mt-1 bg-gray-100 border border-gray-200 rounded-md w-full">
-                <button onClick={() => storageService.triggerDownload(file)} className="text-sm text-gray-800 truncate hover:underline" title={file.name}>
+            <div className="flex items-center justify-between p-2 mt-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-md w-full">
+                <button onClick={() => storageService.triggerDownload(file)} className="text-sm text-gray-800 dark:text-gray-300 truncate hover:underline" title={file.name}>
                     {file.name}
                 </button>
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="text-red-500 hover:text-red-700 ml-2 font-bold text-lg"
+                    className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 ml-2 font-bold text-lg"
                     aria-label="Remove file"
                 >
                     &times;
@@ -54,7 +54,7 @@ const InlineFileUpload: React.FC<InlineFileUploadProps> = ({ file, onUpload, onR
 
     return (
         <div className="mt-1">
-            <label className="text-sm bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-50 font-semibold cursor-pointer transition-colors">
+            <label className="text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 font-semibold cursor-pointer transition-colors">
                 <span>Upload File</span>
                 <input type="file" className="hidden" onChange={handleFileChange} />
             </label>

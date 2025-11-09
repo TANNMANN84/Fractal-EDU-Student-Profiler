@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useAppContext } from '../contexts/AppContext';
-import type { Student, NaplanDataSet, StudentWellbeing, WorkSample, EvidenceLogEntry, FileUpload, NoteEntry, DifferentiationEntry, LiteracyEvidenceEntry, NumeracyEvidenceEntry } from '../types';
+import type { Student, NaplanDataSet, WorkSample, EvidenceLogEntry, FileUpload, NoteEntry, DifferentiationEntry, LiteracyEvidenceEntry, NumeracyEvidenceEntry, ReportOptions } from '../types';
 import { ATSI_STATUSES, HPGE_STATUSES, HPGE_DOMAINS, NAPLAN_BANDS, NEWMANS_ANALYSIS_TAGS } from '../constants';
 import TagInput from './TagInput'; // Import the new component
 import AddEvidenceModal from './AddEvidenceModal';
 import InlineFileUpload from './InlineFileUpload';
 import NotesSection from './NotesSection';
-import AddLiteracyEvidenceModal from './AddLiteracyEvidenceModal';
-import AddNumeracyEvidenceModal from './AddNumeracyEvidenceModal';
+import EditWellbeingSection from './EditWellbeingSection';
+import EditLearningSupportSection from './EditLearningSupportSection';
 import { storageService } from '../services/storageService';
 
 
@@ -32,10 +32,10 @@ const TabButton: React.FC<{ title: string; isActive: boolean; onClick: () => voi
   <button
     type="button"
     onClick={onClick}
-    className={`px-4 py-3 text-sm font-medium border-b-2
+    className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors
       ${isActive
-        ? 'border-blue-600 text-blue-700'
-        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        ? 'border-blue-600 dark:border-blue-400 text-blue-700 dark:text-blue-300'
+        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
       }
       focus:outline-none transition-colors`}
     role="tab"
@@ -56,19 +56,19 @@ const TabPanel: React.FC<{ isActive: boolean; children: React.ReactNode }> = ({ 
 );
 
 const NaplanBandBadge: React.FC<{ band: string }> = ({ band }) => {
-    let colorClasses = 'bg-gray-100 text-gray-800'; // Default for "Not Assessed"
+    let colorClasses = 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'; // Default for "Not Assessed"
     switch (band) {
         case 'Exceeding':
-            colorClasses = 'bg-blue-100 text-blue-800';
+            colorClasses = 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300';
             break;
         case 'Strong':
-            colorClasses = 'bg-green-100 text-green-800';
+            colorClasses = 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300';
             break;
         case 'Developing':
-            colorClasses = 'bg-yellow-100 text-yellow-800';
+            colorClasses = 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300';
             break;
         case 'Needs additional support':
-            colorClasses = 'bg-red-100 text-red-800';
+            colorClasses = 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300';
             break;
     }
 
@@ -79,46 +79,6 @@ const NaplanBandBadge: React.FC<{ band: string }> = ({ band }) => {
     );
 };
 
-
-const EvidenceLogList: React.FC<{ logs: EvidenceLogEntry[], title: string }> = ({ logs, title }) => {
-    if (logs.length === 0) {
-        return null;
-    }
-
-    return (
-        <div className="mt-6">
-            <h4 className="font-semibold text-gray-800 border-b pb-2 mb-4">{title}</h4>
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                {logs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(log => (
-                    <div key={log.logId} className="bg-white border border-gray-200 p-3 rounded-lg shadow-sm">
-                        <div className="flex justify-between items-start">
-                             <p className="text-xs text-gray-500">
-                                {new Date(log.date).toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' })}
-                            </p>
-                            <div className="flex flex-col items-end text-sm gap-1">
-                                {log.evidenceLink && <a href={log.evidenceLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">View Link</a>}
-                                {log.evidenceFile && <button onClick={() => storageService.triggerDownload(log.evidenceFile!)} className="text-blue-600 hover:underline font-semibold">Download File</button>}
-                            </div>
-                        </div>
-                        <p className="mt-1 text-sm text-gray-700 whitespace-pre-wrap">{log.note}</p>
-                        {log.adjustments_used && log.adjustments_used.length > 0 && (
-                            <div className="mt-2 pt-2 border-t">
-                                <p className="text-xs font-semibold text-gray-600">Adjustments:</p>
-                                <ul className="list-disc list-inside text-xs text-gray-600">
-                                    {log.adjustments_used.map(adj => <li key={adj}>{adj}</li>)}
-                                </ul>
-                            </div>
-                        )}
-                         {log.tags?.includes('NCCD') && log.adjustment_level && (
-                            <p className="text-xs font-semibold text-gray-600 mt-2">Level: {log.adjustment_level}</p>
-                        )}
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
 const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, onSave }) => {
   const { data } = useAppContext();
   const [formData, setFormData] = useState<Student>(student);
@@ -126,31 +86,18 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
   const [genderSelection, setGenderSelection] = useState<'M' | 'F' | 'Other'>('M');
   const [genderOther, setGenderOther] = useState('');
   const [activeTab, setActiveTab] = useState('Profile'); // State for active tab
-
-  // States for new list inputs
   const [newGradePeriod, setNewGradePeriod] = useState('');
   const [newGradeValue, setNewGradeValue] = useState('');
-  
-  // States for HPGE Evidence form
   const [newHpgeEvidenceNote, setNewHpgeEvidenceNote] = useState('');
   const [newHpgeEvidenceLink, setNewHpgeEvidenceLink] = useState('');
   const [newHpgeEvidenceFile, setNewHpgeEvidenceFile] = useState<FileUpload | null>(null);
-
-  // States for Work Sample form
   const [newSampleTitle, setNewSampleTitle] = useState('');
   const [newSampleLink, setNewSampleLink] = useState('');
   const [newSampleFileUpload, setNewSampleFileUpload] = useState<FileUpload | null>(null);
   const [newSampleComments, setNewSampleComments] = useState('');
 
-  // States for Differentiation form
-  const [newDifferentiationNote, setNewDifferentiationNote] = useState('');
-  const [newDifferentiationFile, setNewDifferentiationFile] = useState<FileUpload | null>(null);
-
-
   // State for Evidence Log modal
   const [isAddingEvidence, setIsAddingEvidence] = useState(false);
-  const [isAddingLiteracyEvidence, setIsAddingLiteracyEvidence] = useState(false);
-  const [isAddingNumeracyEvidence, setIsAddingNumeracyEvidence] = useState(false);
 
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -256,22 +203,6 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
     setNewSampleComments('');
   };
 
-  const handleAddDifferentiation = () => {
-    if (!newDifferentiationNote.trim()) {
-        alert('Please provide a note for the differentiation entry.');
-        return;
-    }
-    const newEntry: DifferentiationEntry = {
-        id: `diff-${crypto.randomUUID()}`,
-        date: new Date().toISOString(),
-        note: newDifferentiationNote.trim(),
-        file: newDifferentiationFile || undefined,
-    };
-    handleDeepChange('academic.learningSupport.differentiation', [...formData.academic.learningSupport.differentiation, newEntry]);
-    setNewDifferentiationNote('');
-    setNewDifferentiationFile(null);
-  };
-
   const handleSaveLog = (newLog: EvidenceLogEntry) => {
     const updatedLogs = [newLog, ...(formData.evidenceLog || [])];
     handleDeepChange('evidenceLog', updatedLogs);
@@ -281,13 +212,16 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
   const handleSaveLiteracyEvidence = (newLog: LiteracyEvidenceEntry) => {
     const updatedLogs = [newLog, ...(formData.academic.learningSupport.literacyEvidence || [])];
     handleDeepChange('academic.learningSupport.literacyEvidence', updatedLogs);
-    setIsAddingLiteracyEvidence(false);
   };
 
   const handleSaveNumeracyEvidence = (newLog: NumeracyEvidenceEntry) => {
     const updatedLogs = [newLog, ...(formData.academic.learningSupport.numeracyEvidence || [])];
     handleDeepChange('academic.learningSupport.numeracyEvidence', updatedLogs);
-    setIsAddingNumeracyEvidence(false);
+  };
+
+  const handleAddDifferentiation = (newEntry: DifferentiationEntry) => {
+    const updatedEntries = [...formData.academic.learningSupport.differentiation, newEntry];
+    handleDeepChange('academic.learningSupport.differentiation', updatedEntries);
   };
   
   const handleAddNote = (path: 'wellbeing.notes' | 'academic.notes' | 'hpge.notes', content: string) => {
@@ -308,15 +242,15 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
   };
 
   const labelClass = "block text-sm font-medium text-gray-700 mb-1";
-  const inputClass = "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 bg-white text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed";
-  const selectClass = inputClass;
+  const inputClass = "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 text-gray-900 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed";
+  const selectClass = inputClass + " bg-white dark:bg-gray-700";
   const fieldsetClass = "space-y-4 p-4 border border-gray-200 rounded-md";
   
   const isYear9NaplanApplicable = formData.profile.currentYearGroup >= 9;
   
   const NaplanDisplay: React.FC<{ title: string, band: string }> = ({ title, band }) => (
     <div className="flex justify-between items-center text-sm">
-        <span className="text-gray-600 font-medium">{title}:</span>
+        <span className="text-gray-600 dark:text-gray-400 font-medium">{title}:</span>
         <NaplanBandBadge band={band} />
     </div>
 );
@@ -329,11 +263,11 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
           const colorClass = getNaplanBandColor(bandValue);
           return (
               <div key={field}>
-                  <label className={`block text-sm font-medium capitalize ${disabled ? 'text-gray-400' : 'text-gray-700'}`}>{field}</label>
+                  <label className={`block text-sm font-medium capitalize ${disabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>{field}</label>
                   <select 
                       value={bandValue}
                       onChange={(e) => handleNaplanChange(year, field, e.target.value)}
-                      className={`${selectClass} ${!disabled ? colorClass : ''} transition-colors`}
+                      className={`${inputClass} ${!disabled ? colorClass : ''} transition-colors`}
                       disabled={disabled}
                   >
                       {NAPLAN_BANDS.map(band => <option key={band} value={band}>{band}</option>)}
@@ -346,14 +280,14 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
 
   return (
     <>
-      <dialog ref={dialogRef} onClose={handleClose} className="p-0 rounded-lg shadow-xl w-11/12 max-w-4xl backdrop:bg-black backdrop:opacity-50 border border-gray-300">
-        <div className="flex justify-between items-center p-4 bg-gray-100 border-b border-gray-200 sticky top-0 z-10">
-          <h2 className="text-xl font-bold text-gray-900">Edit Profile: {student.firstName} {student.lastName}</h2>
-          <button onClick={handleClose} className="text-2xl font-light text-gray-600 hover:text-gray-900 leading-none">&times;</button>
+      <dialog ref={dialogRef} onClose={handleClose} className="p-0 rounded-lg shadow-xl w-11/12 max-w-4xl backdrop:bg-black backdrop:opacity-50 border border-gray-300 dark:border-gray-600">
+        <div className="flex justify-between items-center p-4 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-200">Edit Profile: {student.firstName} {student.lastName}</h2>
+          <button onClick={handleClose} className="text-2xl font-light text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 leading-none">&times;</button>
         </div>
         
         {/* --- TAB NAVIGATION --- */}
-        <div className="border-b border-gray-200 bg-white sticky top-[65px] z-10">
+        <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-[65px] z-10">
           <nav className="-mb-px flex space-x-4 overflow-x-auto" aria-label="Tabs">
             <TabButton title="Profile" isActive={activeTab === 'Profile'} onClick={() => setActiveTab('Profile')} />
             <TabButton title="Wellbeing & Plans" isActive={activeTab === 'Wellbeing & Plans'} onClick={() => setActiveTab('Wellbeing & Plans')} />
@@ -365,13 +299,13 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
           </nav>
         </div>
 
-        <div className="bg-gray-50 text-gray-900" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+        <div className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-200" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
           
           {/* --- TAB 1: PROFILE --- */}
           <TabPanel isActive={activeTab === 'Profile'}>
             <div className="space-y-4">
-              <div className="flex justify-end items-center border-b pb-4">
-                <button type="button" onClick={() => setIsCoreInfoLocked(prev => !prev)} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+              <div className="flex justify-end items-center border-b dark:border-gray-700 pb-4">
+                <button type="button" onClick={() => setIsCoreInfoLocked(prev => !prev)} className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300">
                   {isCoreInfoLocked ? 'Unlock Core Info' : 'Lock Core Info'}
                 </button>
               </div>
@@ -414,84 +348,21 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
           
           {/* --- TAB 2: WELLBEING & PLANS --- */}
           <TabPanel isActive={activeTab === 'Wellbeing & Plans'}>
-            <div className="space-y-6">
-              <fieldset className={fieldsetClass}>
-                <legend className="text-base font-semibold text-gray-700 px-2">Official Plans</legend>
-                <div className="flex items-center">
-                  <input type="checkbox" id="hasBehaviourPlan" checked={formData.wellbeing.hasBehaviourPlan} onChange={(e) => handleDeepChange('wellbeing.hasBehaviourPlan', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                  <label htmlFor="hasBehaviourPlan" className="ml-2 text-sm font-medium text-gray-900">Has Behaviour Support Plan</label>
-                </div>
-                {formData.wellbeing.hasBehaviourPlan && (
-                  <div>
-                    <label className={labelClass}>Behaviour Plan Link</label>
-                    <input type="text" value={formData.wellbeing.behaviourPlanLink} onChange={(e) => handleDeepChange('wellbeing.behaviourPlanLink', e.target.value)} placeholder="Paste link to SharePoint/Sentral plan..." className={inputClass} />
-                  </div>
-                )}
-                <div className="flex items-center">
-                  <input type="checkbox" id="hasLearningPlan" checked={formData.wellbeing.hasLearningPlan} onChange={(e) => handleDeepChange('wellbeing.hasLearningPlan', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                  <label htmlFor="hasLearningPlan" className="ml-2 text-sm font-medium text-gray-900">Has Individual Learning Plan</label>
-                </div>
-                {formData.wellbeing.hasLearningPlan && (
-                  <div>
-                    <label className={labelClass}>Learning Plan Link</label>
-                    <input type="text" value={formData.wellbeing.learningPlanLink} onChange={(e) => handleDeepChange('wellbeing.learningPlanLink', e.target.value)} placeholder="Paste link to SharePoint/Sentral plan..." className={inputClass} />
-                  </div>
-                )}
-              </fieldset>
-
-              <fieldset className={fieldsetClass}>
-                <legend className="text-base font-semibold text-gray-700 px-2">At-a-Glance Profile</legend>
-                <div>
-                  <label className={labelClass}>Wellbeing Strengths & Positives</label>
-                  <TagInput value={formData.wellbeing.strengths} onChange={(tags) => handleDeepChange('wellbeing.strengths', tags)} placeholder="e.g., Responds well to praise..." />
-                  <p className="text-xs text-gray-500 mt-1">Type a value and press Enter to add it to the list.</p>
-                </div>
-                <div>
-                  <label className={labelClass}>Known Triggers & Agitators</label>
-                  <TagInput value={formData.wellbeing.triggers} onChange={(tags) => handleDeepChange('wellbeing.triggers', tags)} placeholder="e.g., Loud noises, Unstructured time..." />
-                   <p className="text-xs text-gray-500 mt-1">Type a value and press Enter to add it to the list.</p>
-                </div>
-                <div>
-                  <label className={labelClass}>Proactive Strategies (What to DO)</label>
-                  <TagInput value={formData.wellbeing.proactiveStrategies} onChange={(tags) => handleDeepChange('wellbeing.proactiveStrategies', tags)} placeholder="e.g., Give 5-min warning..." />
-                   <p className="text-xs text-gray-500 mt-1">Type a value and press Enter to add it to the list.</p>
-                </div>
-                <div>
-                  <label className={labelClass}>De-escalation Strategies (When an issue occurs)</label>
-                  <TagInput value={formData.wellbeing.deescalationStrategies} onChange={(tags) => handleDeepChange('wellbeing.deescalationStrategies', tags)} placeholder="e.g., Offer quiet space, Speak calmly..." />
-                   <p className="text-xs text-gray-500 mt-1">Type a value and press Enter to add it to the list.</p>
-                </div>
-              </fieldset>
-
-              <fieldset className={fieldsetClass}>
-                <legend className="text-base font-semibold text-gray-700 px-2">Context & Medical</legend>
-                <div>
-                  <label className={labelClass}>Medical Needs</label>
-                  <TagInput value={formData.wellbeing.medicalNeeds} onChange={(tags) => handleDeepChange('wellbeing.medicalNeeds', tags)} placeholder="e.g., Asthma, Anaphylaxis (Peanuts)..." />
-                  <p className="text-xs text-gray-500 mt-1">Type a value and press Enter to add it to the list.</p>
-                </div>
-                <div>
-                  <label className={labelClass}>Attendance (%)</label>
-                  <input type="number" value={formData.wellbeing.attendancePercent} onChange={(e) => handleDeepChange('wellbeing.attendancePercent', e.target.valueAsNumber || 0)} className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Sentral Behaviour Summary</label>
-                  <textarea value={formData.wellbeing.sentralBehaviourSummary} onChange={(e) => handleDeepChange('wellbeing.sentralBehaviourSummary', e.target.value)} rows={4} placeholder="Summarise historical behaviour from Sentral here. e.g., '5 minor incidents in T1...'" className={inputClass} />
-                </div>
-              </fieldset>
-              <NotesSection title="Wellbeing Notes" notes={formData.wellbeing.notes || []} onAddNote={(content) => handleAddNote('wellbeing.notes', content)} />
-              <EvidenceLogList logs={wellbeingLogs} title="Related Wellbeing Evidence" />
-            </div>
+            <EditWellbeingSection
+              wellbeingData={formData.wellbeing}
+              evidenceLog={wellbeingLogs}
+              onWellbeingChange={(newWellbeingData) => handleDeepChange('wellbeing', newWellbeingData)}
+            />
           </TabPanel>
 
           {/* --- TAB 3: ACADEMIC --- */}
           <TabPanel isActive={activeTab === 'Academic'}>
             <div className="space-y-6">
-              <div className="p-4 border border-gray-200 rounded-lg bg-white shadow-sm">
-                <h4 className="font-semibold text-gray-800 border-b pb-2 mb-4">NAPLAN Results</h4>
+              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800/80 shadow-sm">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">NAPLAN Results</h4>
                 <div className="space-y-4">
                   <div>
-                    <h5 className="font-medium text-gray-700 mb-2">Year 7</h5>
+                    <h5 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Year 7</h5>
                     <NaplanEditor year="year7" />
                   </div>
                   <div>
@@ -500,17 +371,17 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
                   </div>
                 </div>
               </div>
-              <div className="p-4 border border-gray-200 rounded-lg bg-white shadow-sm">
-                <h4 className="font-semibold text-gray-800 border-b pb-2 mb-4">Report Grades</h4>
+              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800/80 shadow-sm">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Report Grades</h4>
                 <ul className="space-y-2 mb-4">
                   {formData.academic.reportGrades.map((grade) => (
-                    <li key={grade.id} className="text-sm"><strong>{grade.period}:</strong> {grade.grade}</li>
+                    <li key={grade.id} className="text-sm dark:text-gray-300"><strong>{grade.period}:</strong> {grade.grade}</li>
                   ))}
                 </ul>
                 <div className="flex gap-2">
                   <input type="text" value={newGradePeriod} onChange={(e) => setNewGradePeriod(e.target.value)} placeholder="Period (e.g., Y10S1)" className={inputClass + " w-1/2"} />
                   <input type="text" value={newGradeValue} onChange={(e) => setNewGradeValue(e.target.value)} placeholder="Grade" className={inputClass + " w-1/4"} />
-                  <button type="button" onClick={handleAddReportGrade} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold transition-colors">Add</button>
+                  <button type="button" onClick={handleAddReportGrade} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-semibold transition-colors">Add</button>
                 </div>
               </div>
               <NotesSection title="Academic Notes" notes={formData.academic.notes || []} onAddNote={(content) => handleAddNote('academic.notes', content)} />
@@ -519,116 +390,13 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
 
           {/* --- TAB 4: LEARNING SUPPORT --- */}
           <TabPanel isActive={activeTab === 'Learning Support'}>
-             <div className="space-y-6">
-                 <fieldset className={fieldsetClass}>
-                    <legend className="text-base font-semibold text-gray-700 px-2">Numeracy</legend>
-                    <div className="p-2 border rounded-md bg-white space-y-2">
-                        <NaplanDisplay title="Year 7 NAPLAN" band={formData.academic.naplan.year7.numeracy} />
-                        {isYear9NaplanApplicable && <NaplanDisplay title="Year 9 NAPLAN" band={formData.academic.naplan.year9.numeracy} />}
-                    </div>
-                     <div className="flex justify-end mt-4">
-                        <button onClick={() => setIsAddingNumeracyEvidence(true)} className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm font-semibold">
-                            + Add Numeracy Evidence
-                        </button>
-                    </div>
-                     <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                        {formData.academic.learningSupport.numeracyEvidence?.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(entry => (
-                            <div key={entry.id} className="bg-white border p-3 rounded-lg shadow-sm">
-                                <div className="flex justify-between items-start">
-                                    <p className="text-xs text-gray-500">{new Date(entry.date).toLocaleDateString()}</p>
-                                    {entry.file && <button onClick={() => storageService.triggerDownload(entry.file!)} className="text-xs text-blue-600 hover:underline">Download Evidence</button>}
-                                </div>
-                                {entry.note && <p className="text-sm mt-1 whitespace-pre-wrap">{entry.note}</p>}
-                                <div className="mt-2 pt-2 border-t flex flex-wrap gap-2">
-                                    {entry.numeracyTags.map(tag => (
-                                        <span key={tag} className="text-xs bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">{tag}</span>
-                                    ))}
-                                    {entry.newmansTags.map(tag => {
-                                        const tagInfo = NEWMANS_ANALYSIS_TAGS.find(t => t.name === tag);
-                                        return (
-                                            <span key={tag} className={`text-xs ${tagInfo?.color || 'bg-gray-200'} ${tagInfo?.textColor || 'text-gray-800'} px-2 py-0.5 rounded-full`}>{tag}</span>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </fieldset>
-                
-                <fieldset className={fieldsetClass}>
-                    <legend className="text-base font-semibold text-gray-700 px-2">Literacy</legend>
-                    <div className="p-2 border rounded-md bg-white grid grid-cols-2 gap-2">
-                        <NaplanDisplay title="Reading (Y7)" band={formData.academic.naplan.year7.reading} />
-                        {isYear9NaplanApplicable && <NaplanDisplay title="Reading (Y9)" band={formData.academic.naplan.year9.reading} />}
-                         <NaplanDisplay title="Writing (Y7)" band={formData.academic.naplan.year7.writing} />
-                        {isYear9NaplanApplicable && <NaplanDisplay title="Writing (Y9)" band={formData.academic.naplan.year9.writing} />}
-                         <NaplanDisplay title="Spelling (Y7)" band={formData.academic.naplan.year7.spelling} />
-                        {isYear9NaplanApplicable && <NaplanDisplay title="Spelling (Y9)" band={formData.academic.naplan.year9.spelling} />}
-                         <NaplanDisplay title="Grammar (Y7)" band={formData.academic.naplan.year7.grammar} />
-                        {isYear9NaplanApplicable && <NaplanDisplay title="Grammar (Y9)" band={formData.academic.naplan.year9.grammar} />}
-                    </div>
-                     <div className="flex justify-end mt-4">
-                        <button onClick={() => setIsAddingLiteracyEvidence(true)} className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm font-semibold">
-                            + Add Literacy Evidence
-                        </button>
-                    </div>
-                    <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                        {formData.academic.learningSupport.literacyEvidence?.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(entry => (
-                            <div key={entry.id} className="bg-white border p-3 rounded-lg shadow-sm">
-                                <div className="flex justify-between items-start">
-                                    <p className="text-xs text-gray-500">{new Date(entry.date).toLocaleDateString()}</p>
-                                    {entry.file && <button onClick={() => storageService.triggerDownload(entry.file!)} className="text-xs text-blue-600 hover:underline">Download Evidence</button>}
-                                </div>
-                                {entry.note && <p className="text-sm mt-1 whitespace-pre-wrap">{entry.note}</p>}
-                                <div className="mt-2 pt-2 border-t flex flex-wrap gap-2">
-                                    {entry.tags.map(tag => (
-                                        <span key={tag} className="text-xs bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full">{tag}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </fieldset>
-
-                <fieldset className={fieldsetClass}>
-                    <legend className="text-base font-semibold text-gray-700 px-2">Status & Differentiation</legend>
-                     <div className="flex items-center">
-                        <input type="checkbox" id="isSwan" checked={formData.academic.learningSupport?.isSwan} onChange={(e) => handleDeepChange('academic.learningSupport.isSwan', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                        <label htmlFor="isSwan" className="ml-2 text-sm font-medium text-gray-900">SWAN (Student with additional needs)</label>
-                    </div>
-                    <div className={!formData.academic.learningSupport?.isSwan ? 'opacity-50 pointer-events-none' : ''}>
-                        <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-                            {formData.academic.learningSupport?.differentiation.map(item => (
-                                <div key={item.id} className="bg-white border p-2 rounded">
-                                    <p className="text-xs text-gray-500">{new Date(item.date).toLocaleDateString()}</p>
-                                    <p className="text-sm mt-1">{item.note}</p>
-                                    {item.file && <button onClick={() => storageService.triggerDownload(item.file!)} className="text-xs text-blue-600 hover:underline">Download Evidence</button>}
-                                </div>
-                            ))}
-                        </div>
-                        <div className="border-t pt-4">
-                             <h5 className="text-sm font-semibold text-gray-700 mb-2">Log New Differentiation</h5>
-                             <textarea value={newDifferentiationNote} onChange={e => setNewDifferentiationNote(e.target.value)} rows={3} placeholder="Note of differentiation provided..." className={inputClass} />
-                             <div className="mt-2">
-                                <InlineFileUpload file={newDifferentiationFile} onUpload={setNewDifferentiationFile} onRemove={() => setNewDifferentiationFile(null)} />
-                             </div>
-                             <div className="text-right mt-2">
-                                <button onClick={handleAddDifferentiation} className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Add Entry</button>
-                             </div>
-                        </div>
-                    </div>
-                </fieldset>
-                
-                <fieldset className={fieldsetClass}>
-                    <legend className="text-base font-semibold text-gray-700 px-2">Learning Support Centre</legend>
-                    <div className="flex items-center">
-                        <input type="checkbox" id="requiresBooking" checked={formData.academic.learningSupport?.requiresLearningCentreBooking} onChange={(e) => handleDeepChange('academic.learningSupport.requiresLearningCentreBooking', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                        <label htmlFor="requiresBooking" className="ml-2 text-sm font-medium text-gray-900">Student requires booking into learning centre for assessments</label>
-                    </div>
-                </fieldset>
-
-                <EvidenceLogList logs={learningSupportLogs} title="Related General Learning Support Evidence" />
-             </div>
+            <EditLearningSupportSection
+              student={formData}
+              onLearningSupportChange={(newLearningSupportData) => handleDeepChange('academic.learningSupport', newLearningSupportData)}
+              onLiteracyEvidenceAdd={handleSaveLiteracyEvidence}
+              onNumeracyEvidenceAdd={handleSaveNumeracyEvidence}
+              onDifferentiationAdd={handleAddDifferentiation}
+            />
           </TabPanel>
 
           {/* --- TAB 5: HPGE PROFILE --- */}
@@ -653,22 +421,22 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
                 <textarea value={formData.hpge.talentDevelopmentPlan} onChange={(e) => handleDeepChange('hpge.talentDevelopmentPlan', e.target.value)} rows={4} className={inputClass} />
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Identification Evidence</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">Identification Evidence</h4>
                 <ul className="space-y-2 mb-4">
                   {formData.hpge.identificationEvidence.map((ev) => (
-                    <li key={ev.id} className="text-sm bg-gray-100 p-2 border rounded">
-                      <p className="text-gray-800">{ev.note}</p>
+                    <li key={ev.id} className="text-sm bg-gray-100 dark:bg-gray-800 p-2 border dark:border-gray-700 rounded">
+                      <p className="text-gray-800 dark:text-gray-300">{ev.note}</p>
                       {(ev.fileLink || ev.evidenceFile) && (
                           <div className="flex items-center gap-4 mt-1">
-                              {ev.fileLink && <a href={ev.fileLink} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:underline font-semibold">View Link</a>}
-                              {ev.evidenceFile && <button onClick={() => storageService.triggerDownload(ev.evidenceFile!)} className="text-xs text-indigo-600 hover:underline font-semibold">Download File</button>}
+                              {ev.fileLink && <a href={ev.fileLink} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">View Link</a>}
+                              {ev.evidenceFile && <button onClick={() => storageService.triggerDownload(ev.evidenceFile!)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">Download File</button>}
                           </div>
                       )}
                     </li>
                   ))}
                 </ul>
-                <div className="p-4 bg-gray-100 border rounded-lg space-y-3">
-                    <h5 className="text-sm font-semibold text-gray-700">Add New Evidence</h5>
+                <div className="p-4 bg-gray-100 dark:bg-gray-800 border dark:border-gray-700 rounded-lg space-y-3">
+                    <h5 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Add New Evidence</h5>
                     <div>
                         <label className={labelClass}>Note</label>
                         <textarea value={newHpgeEvidenceNote} onChange={(e) => setNewHpgeEvidenceNote(e.target.value)} rows={3} placeholder="Add new evidence note..." className={inputClass} />
@@ -684,12 +452,12 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
                         </div>
                     </div>
                      <div className="flex justify-end">
-                        <button type="button" onClick={handleAddHpgeEvidence} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold transition-colors text-sm">Add Evidence</button>
+                        <button type="button" onClick={handleAddHpgeEvidence} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-semibold transition-colors text-sm">Add Evidence</button>
                     </div>
                 </div>
               </div>
               <NotesSection title="HPGE Notes" notes={formData.hpge.notes || []} onAddNote={(content) => handleAddNote('hpge.notes', content)} />
-              <EvidenceLogList logs={hpgeLogs} title="Related HPGE Evidence" />
+              {/* The EvidenceLogList for HPGE is now part of the HPGE section component if you choose to extract it */}
             </div>
           </TabPanel>
           
@@ -697,8 +465,8 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
           <TabPanel isActive={activeTab === 'Work Samples'}>
             <div className="space-y-6">
                 <div>
-                    <h3 className="font-semibold text-lg text-gray-800 mb-2">Add New Work Sample</h3>
-                    <div className="p-4 bg-gray-100 border rounded-lg space-y-4">
+                    <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-300 mb-2">Add New Work Sample</h3>
+                    <div className="p-4 bg-gray-100 dark:bg-gray-800 border dark:border-gray-700 rounded-lg space-y-4">
                         <div>
                           <label className={labelClass}>Title</label>
                           <input type="text" value={newSampleTitle} onChange={e => setNewSampleTitle(e.target.value)} className={inputClass} placeholder="e.g., Formative Task 1" required />
@@ -722,30 +490,30 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
                             </div>
                         </div>
                       <div className="flex justify-end">
-                        <button type="button" onClick={handleAddWorkSample} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-semibold text-sm">
+                        <button type="button" onClick={handleAddWorkSample} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-semibold text-sm">
                           + Add Sample
                         </button>
                       </div>
                     </div>
                 </div>
                 <div>
-                    <h3 className="font-semibold text-lg text-gray-800 mb-2">Logged Work Samples</h3>
-                    <div className="border rounded-lg overflow-hidden">
-                      <ul className="divide-y divide-gray-200">
+                    <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-300 mb-2">Logged Work Samples</h3>
+                    <div className="border dark:border-gray-700 rounded-lg overflow-hidden">
+                      <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                         {formData.workSamples && formData.workSamples.length > 0 ? (
                           formData.workSamples.map(sample => (
-                            <li key={sample.id} className="p-3 flex flex-col items-start hover:bg-gray-50">
+                            <li key={sample.id} className="p-3 flex flex-col items-start hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                 <div className="w-full flex justify-between items-center">
-                                    <span className="font-medium text-gray-800 truncate pr-4">{sample.title}</span>
+                                    <span className="font-medium text-gray-800 dark:text-gray-300 truncate pr-4">{sample.title}</span>
                                     <div className="flex items-center gap-4 flex-shrink-0">
                                         {sample.fileLink && (
-                                            <a href={sample.fileLink} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 hover:underline font-semibold">
+                                            <a href={sample.fileLink} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
                                                 View Link
                                             </a>
                                         )}
                                         {sample.fileUpload && (
                                             <>
-                                                <button onClick={() => storageService.triggerDownload(sample.fileUpload!)} className="text-sm text-indigo-600 hover:underline font-semibold">
+                                                <button onClick={() => storageService.triggerDownload(sample.fileUpload!)} className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
                                                     Download File
                                                 </button>
                                             </>
@@ -753,12 +521,12 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
                                     </div>
                                 </div>
                                 {sample.comments && (
-                                    <p className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded w-full border-l-4 border-gray-200 whitespace-pre-wrap">{sample.comments}</p>
+                                    <p className="mt-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 p-2 rounded w-full border-l-4 border-gray-200 dark:border-gray-600 whitespace-pre-wrap">{sample.comments}</p>
                                 )}
                             </li>
                           ))
                         ) : (
-                          <li className="p-4 text-center text-gray-500">No work samples have been logged for this student.</li>
+                          <li className="p-4 text-center text-gray-500 dark:text-gray-400">No work samples have been logged for this student.</li>
                         )}
                       </ul>
                     </div>
@@ -770,39 +538,39 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
           <TabPanel isActive={activeTab === 'Evidence Log'}>
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                    <h3 className="font-semibold text-lg text-gray-800">Evidence Log</h3>
-                    <button onClick={() => setIsAddingEvidence(true)} className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm font-semibold">
+                    <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-300">Evidence Log</h3>
+                    <button onClick={() => setIsAddingEvidence(true)} className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-sm font-semibold">
                         + Add Entry
                     </button>
                 </div>
                 <div className="space-y-4">
                     {formData.evidenceLog.length > 0 ? (
                         formData.evidenceLog.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(log => (
-                            <div key={log.logId} className="bg-white border border-gray-200 p-3 rounded-lg shadow-sm">
+                            <div key={log.logId} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 rounded-lg shadow-sm">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="font-semibold text-gray-800">{log.tags?.includes('NCCD') && log.adjustment_level ? log.adjustment_level : 'General Observation'}</p>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="font-semibold text-gray-800 dark:text-gray-200">{log.tags?.includes('NCCD') && log.adjustment_level ? log.adjustment_level : 'General Observation'}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
                                             {new Date(log.date).toLocaleDateString('en-AU', { year: 'numeric', month: 'long', day: 'numeric' })} by {log.teacher}
                                         </p>
                                     </div>
                                     <div className="flex flex-col items-end text-sm gap-1">
-                                        {log.evidenceLink && <a href={log.evidenceLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">View Link</a>}
-                                        {log.evidenceFile && <button onClick={() => storageService.triggerDownload(log.evidenceFile!)} className="text-blue-600 hover:underline font-semibold">Download File</button>}
+                                        {log.evidenceLink && <a href={log.evidenceLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">View Link</a>}
+                                        {log.evidenceFile && <button onClick={() => storageService.triggerDownload(log.evidenceFile!)} className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">Download File</button>}
                                     </div>
                                 </div>
-                                <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">{log.note}</p>
+                                <p className="mt-2 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{log.note}</p>
                                 {log.adjustments_used && log.adjustments_used.length > 0 && (
-                                    <div className="mt-2 pt-2 border-t">
-                                        <p className="text-xs font-semibold text-gray-600">Adjustments Used:</p>
-                                        <ul className="list-disc list-inside text-xs text-gray-600">
+                                    <div className="mt-2 pt-2 border-t dark:border-gray-700">
+                                        <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Adjustments Used:</p>
+                                        <ul className="list-disc list-inside text-xs text-gray-600 dark:text-gray-400">
                                             {log.adjustments_used.map(adj => <li key={adj}>{adj}</li>)}
                                         </ul>
                                     </div>
                                 )}
                                 {log.tags && log.tags.length > 0 && (
-                                    <div className="mt-2 pt-2 border-t flex items-center gap-2">
-                                        <p className="text-xs font-semibold text-gray-600">Tags:</p>
+                                    <div className="mt-2 pt-2 border-t dark:border-gray-700 flex items-center gap-2">
+                                        <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Tags:</p>
                                         <div className="flex flex-wrap gap-1">
                                             {log.tags.map(tag => (
                                                 <span key={tag} className="text-xs bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full">{tag}</span>
@@ -813,7 +581,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
                             </div>
                         ))
                     ) : (
-                        <p className="text-sm text-gray-500 text-center py-4">No evidence logs recorded for this student.</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No evidence logs recorded for this student.</p>
                     )}
                 </div>
             </div>
@@ -821,14 +589,12 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({ student, onClose, o
 
         </div>
 
-        <div className="p-4 bg-gray-100 border-t border-gray-200 flex justify-end gap-2 sticky bottom-0">
-          <button type="button" onClick={handleClose} className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 font-semibold transition-colors">Cancel</button>
-          <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold transition-colors">Save Changes</button>
+        <div className="p-4 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2 sticky bottom-0">
+          <button type="button" onClick={handleClose} className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 font-semibold transition-colors">Cancel</button>
+          <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-semibold transition-colors">Save Changes</button>
         </div>
       </dialog>
       {isAddingEvidence && <AddEvidenceModal onClose={() => setIsAddingEvidence(false)} onSaveLog={handleSaveLog} />}
-      {isAddingLiteracyEvidence && <AddLiteracyEvidenceModal onClose={() => setIsAddingLiteracyEvidence(false)} onSave={handleSaveLiteracyEvidence} />}
-      {isAddingNumeracyEvidence && <AddNumeracyEvidenceModal onClose={() => setIsAddingNumeracyEvidence(false)} onSave={handleSaveNumeracyEvidence} />}
     </>
   );
 };

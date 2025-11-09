@@ -124,26 +124,26 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = ({ students }) => {
 
     if (students.length === 0) {
         return (
-             <div className="bg-white p-6 rounded-lg shadow">
-                 <h3 className="text-xl font-bold text-gray-800">Class Analytics</h3>
-                 <p className="text-gray-600 mt-2">Add students to the class to see analytics.</p>
+             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                 <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">Class Analytics</h3>
+                 <p className="text-gray-600 dark:text-gray-400 mt-2">Add students to the class to see analytics.</p>
              </div>
         );
     }
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Class Analytics</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Class Analytics</h3>
             <div className="space-y-6">
                 {/* NAPLAN Chart */}
                 <div>
                     <div className="flex justify-between items-center mb-2 flex-wrap gap-2">
-                        <h4 className="font-semibold text-gray-700">NAPLAN Distribution</h4>
+                        <h4 className="font-semibold text-gray-700 dark:text-gray-300">NAPLAN Distribution</h4>
                         <div className="flex gap-2">
-                            <select value={naplanYear} onChange={e => setNaplanYear(e.target.value as 'year7' | 'year9')} className="text-sm border-gray-300 rounded-md shadow-sm p-1">
+                            <select value={naplanYear} onChange={e => setNaplanYear(e.target.value as 'year7' | 'year9')} className="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md shadow-sm p-1">
                                 {NAPLAN_YEARS.map(year => <option key={year} value={year}>{`Year ${year.slice(-1)}`}</option>)}
                             </select>
-                            <select value={naplanSubject} onChange={e => setNaplanSubject(e.target.value as NaplanSubject)} className="text-sm border-gray-300 rounded-md shadow-sm p-1">
+                            <select value={naplanSubject} onChange={e => setNaplanSubject(e.target.value as NaplanSubject)} className="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-md shadow-sm p-1">
                                 {NAPLAN_SUBJECTS.map(subject => <option key={subject} value={subject}>{NAPLAN_SUBJECT_DISPLAY[subject]}</option>)}
                             </select>
                         </div>
@@ -152,7 +152,7 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = ({ students }) => {
                 </div>
 
                 {/* Other Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t dark:border-gray-700">
                     <PieChart data={planData.learning} title="Learning Plans" onSliceClick={(label) => handlePieSliceClick(label, s => s.wellbeing.hasLearningPlan === (label === 'Has Plan'), 'Students with Learning Plan')} />
                     <PieChart data={planData.behaviour} title="Behaviour Plans" onSliceClick={(label) => handlePieSliceClick(label, s => s.wellbeing.hasBehaviourPlan === (label === 'Has Plan'), 'Students with Behaviour Plan')} />
                     <PieChart data={hpgeData} title="HPGE Status" onSliceClick={(label) => handlePieSliceClick(label, s => s.hpge.status === label, 'Students with HPGE Status')} />
@@ -161,12 +161,12 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = ({ students }) => {
             </div>
 
             {selectedStudents && (
-                <div className="mt-6 p-4 border-t-2 border-indigo-200 bg-indigo-50 rounded-lg">
+                <div className="mt-6 p-4 border-t-2 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
                     <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold text-indigo-800">{selectedStudents.title} ({selectedStudents.students.length})</h4>
+                        <h4 className="font-semibold text-indigo-800 dark:text-indigo-300">{selectedStudents.title} ({selectedStudents.students.length})</h4>
                         <button
                             onClick={() => setSelectedStudents(null)}
-                            className="text-indigo-600 hover:text-indigo-800 font-bold text-2xl leading-none"
+                            className="text-indigo-600 dark:text-indigo-300 hover:text-indigo-800 dark:hover:text-indigo-100 font-bold text-2xl leading-none"
                             aria-label="Close student list"
                         >
                             &times;
@@ -175,7 +175,7 @@ const ClassAnalytics: React.FC<ClassAnalyticsProps> = ({ students }) => {
                     <ul className="max-h-48 overflow-y-auto space-y-1 pr-2">
                         {selectedStudents.students.length > 0 ? (
                             selectedStudents.students.sort((a,b) => a.lastName.localeCompare(b.lastName)).map(student => (
-                                <li key={student.studentId} className="text-sm text-gray-800 bg-white p-2 rounded border">
+                                <li key={student.studentId} className="text-sm text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 p-2 rounded border dark:border-gray-600">
                                     {student.lastName}, {student.firstName}
                                 </li>
                             ))

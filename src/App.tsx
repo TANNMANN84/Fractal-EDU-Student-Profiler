@@ -10,16 +10,16 @@ const App: React.FC = () => {
 
   return (
     <AppProvider>
-      <div className="min-h-screen bg-gray-100 text-gray-900">
-        <header className="bg-white shadow-md sticky top-0 z-20">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
+        <header className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-20">
           <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-3">
-              <h1 className="text-xl font-bold text-indigo-600">Fractal EDU - Student Profiler</h1>
-              <div className="flex space-x-2 rounded-lg bg-gray-100 p-1">
+              <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">Fractal EDU - Student Profiler</h1>
+              <div className="flex space-x-2 rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
                 <button
                   onClick={() => setActiveView('dashboard')}
                   className={`px-3 py-1.5 font-semibold text-sm rounded-md transition-all duration-200 ${
-                    activeView === 'dashboard' ? 'bg-white text-indigo-700 shadow' : 'text-gray-600 hover:bg-white/60'
+                    activeView === 'dashboard' ? 'bg-white dark:bg-gray-900 text-indigo-700 dark:text-indigo-300 shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-gray-600/60'
                   }`}
                 >
                   Dashboard
@@ -27,7 +27,7 @@ const App: React.FC = () => {
                 <button
                   onClick={() => setActiveView('console')}
                   className={`px-3 py-1.5 font-semibold text-sm rounded-md transition-all duration-200 ${
-                    activeView === 'console' ? 'bg-white text-indigo-700 shadow' : 'text-gray-600 hover:bg-white/60'
+                    activeView === 'console' ? 'bg-white dark:bg-gray-900 text-indigo-700 dark:text-indigo-300 shadow' : 'text-gray-600 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-gray-600/60'
                   }`}
                 >
                   Management

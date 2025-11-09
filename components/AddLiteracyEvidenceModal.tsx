@@ -50,17 +50,17 @@ const AddLiteracyEvidenceModal: React.FC<AddLiteracyEvidenceModalProps> = ({ onC
     onClose();
   }
   
-  const labelStyle = "block font-semibold text-gray-700";
-  const inputStyle = "w-full p-2 border border-gray-300 rounded bg-white focus:ring-blue-500 focus:border-blue-500";
+  const labelStyle = "block font-semibold text-gray-700 dark:text-gray-300";
+  const inputStyle = "w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 focus:ring-blue-500 focus:border-blue-500";
 
   return (
-    <dialog ref={dialogRef} onClose={onClose} className="p-0 rounded-lg shadow-xl w-11/12 max-w-xl backdrop:bg-black backdrop:opacity-50 border border-gray-300">
-        <div className="flex justify-between items-center p-4 bg-gray-100 border-b border-gray-200 sticky top-0">
-            <h2 className="text-xl font-bold text-gray-900">Add Literacy Evidence</h2>
-            <button onClick={handleClose} className="text-2xl font-light text-gray-600 hover:text-gray-900 leading-none">&times;</button>
+    <dialog ref={dialogRef} onClose={onClose} className="p-0 rounded-lg shadow-xl w-11/12 max-w-xl backdrop:bg-black backdrop:opacity-50 border border-gray-300 dark:border-gray-600">
+        <div className="flex justify-between items-center p-4 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-200">Add Literacy Evidence</h2>
+            <button onClick={handleClose} className="text-2xl font-light text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 leading-none">&times;</button>
         </div>
         
-        <div className="p-6 space-y-4 bg-white text-gray-900">
+        <div className="p-6 space-y-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200">
             <div>
                 <label className={labelStyle}>Tags (at least one required)</label>
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -69,10 +69,10 @@ const AddLiteracyEvidenceModal: React.FC<AddLiteracyEvidenceModalProps> = ({ onC
                             key={tag}
                             type="button"
                             onClick={() => handleToggleTag(tag)}
-                            className={`px-3 py-1 text-sm font-medium rounded-full border transition-colors ${
+                            className={`px-3 py-1 text-sm font-medium rounded-full border transition-colors ${ 
                                 tags.includes(tag)
-                                ? 'bg-blue-600 text-white border-blue-600'
-                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                ? 'bg-blue-600 text-white border-blue-600' 
+                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
                             }`}
                         >
                             {tag}
@@ -96,9 +96,9 @@ const AddLiteracyEvidenceModal: React.FC<AddLiteracyEvidenceModalProps> = ({ onC
             </div>
         </div>
 
-        <div className="p-4 bg-gray-100 border-t border-gray-200 flex justify-end gap-2 sticky bottom-0">
-            <button onClick={handleClose} className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 font-semibold transition-colors">Cancel</button>
-            <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold transition-colors">Save Evidence</button>
+        <div className="p-4 bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2 sticky bottom-0">
+            <button onClick={handleClose} className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 font-semibold transition-colors">Cancel</button>
+            <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-semibold transition-colors">Save Evidence</button>
         </div>
     </dialog>
   );

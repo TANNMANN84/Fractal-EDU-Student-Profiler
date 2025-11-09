@@ -134,3 +134,8 @@ export const BLANK_MONITORING_DOC_SKELETON: Omit<MonitoringDoc, 'id' | 'classId'
     teacherSignOff: createEmptyTermObject({ teacherName: '', date: null }),
     headTeacherSignOff: createEmptyTermObject({ teacherName: '', date: null }),
 };
+export const BLANK_SEATING_CHART = {
+    rows: 5,
+    seatsPerRow: 6,
+    arrangement: Array(5).fill(null).map(() => Array(6).fill(null)),
+};

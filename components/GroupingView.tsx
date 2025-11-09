@@ -112,7 +112,7 @@ const GroupingView: React.FC<GroupingViewProps> = ({ students, dataPoint }) => {
   const isNaplanView = dataPoint.startsWith('NAPLAN');
 
   return (
-    <div className="flex flex-row gap-4 overflow-x-auto p-2 bg-gray-50 rounded-lg">
+    <div className="flex flex-row gap-4 overflow-x-auto p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
       {config.columns.map((columnValue: any) => {
         const columnKey = String(columnValue);
         const title = config.columnTitles?.[columnKey] ?? columnKey;
@@ -120,19 +120,19 @@ const GroupingView: React.FC<GroupingViewProps> = ({ students, dataPoint }) => {
         
         const headerColorClass = isNaplanView 
             ? getNaplanBandColorClasses(columnKey)
-            : 'bg-gray-300 text-gray-800';
+            : 'bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
 
         return (
-          <div key={columnKey} className="w-1/4 min-w-[220px] flex-shrink-0 bg-gray-200 rounded-lg shadow">
+          <div key={columnKey} className="w-1/4 min-w-[220px] flex-shrink-0 bg-gray-200 dark:bg-gray-800 rounded-lg shadow">
             <h3 className={`font-bold text-center p-2 rounded-t-lg ${headerColorClass} transition-colors`}>
               {title}
-              <span className="ml-2 font-semibold bg-gray-500 text-white text-xs rounded-full px-2 py-0.5">
+              <span className="ml-2 font-semibold bg-gray-500 dark:bg-gray-600 text-white dark:text-gray-100 text-xs rounded-full px-2 py-0.5">
                 {studentsInColumn.length}
               </span>
             </h3>
             <div className="p-2 space-y-2 min-h-[100px] max-h-[60vh] overflow-y-auto">
               {studentsInColumn.map(student => (
-                <div key={student.studentId} className="bg-white p-2 rounded shadow-sm border border-gray-200 text-gray-900">
+                <div key={student.studentId} className="bg-white dark:bg-gray-700 p-2 rounded shadow-sm border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-gray-200">
                   {student.firstName} {student.lastName}
                 </div>
               ))}

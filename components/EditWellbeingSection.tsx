@@ -7,11 +7,10 @@ import { EvidenceLogList } from './EvidenceLogList';
 
 interface EditWellbeingSectionProps {
     wellbeingData: StudentWellbeing;
-    evidenceLog: EvidenceLogEntry[];
     onWellbeingChange: (newWellbeingData: StudentWellbeing) => void;
 }
 
-const EditWellbeingSection: React.FC<EditWellbeingSectionProps> = ({ wellbeingData, evidenceLog, onWellbeingChange }) => {
+const EditWellbeingSection: React.FC<EditWellbeingSectionProps> = ({ wellbeingData, onWellbeingChange }) => {
     const { data } = useAppContext();
 
     const handleFieldChange = (field: keyof StudentWellbeing, value: any) => {
@@ -99,7 +98,7 @@ const EditWellbeingSection: React.FC<EditWellbeingSectionProps> = ({ wellbeingDa
                 </div>
             </fieldset>
             <NotesSection title="Wellbeing Notes" notes={wellbeingData.notes || []} onAddNote={handleAddNote} />
-            <EvidenceLogList logs={evidenceLog} title="Related Wellbeing Evidence" />
+            <EvidenceLogList logs={wellbeingData.evidenceLog || []} title="Related Wellbeing Evidence" />
         </div>
     );
 };

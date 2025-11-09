@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import type { Student } from '../types';
+import type { Student, ReportOptions } from '../types';
 
 interface StudentListViewProps {
   students: Student[];
@@ -8,6 +8,8 @@ interface StudentListViewProps {
 }
 
 type SortableKeys = 'lastName' | 'atsiStatus' | 'hasLearningPlan' | 'hasBehaviourPlan' | 'hpgeStatus';
+
+export type { ReportOptions };
 
 const StudentListView: React.FC<StudentListViewProps> = ({ students, onSelectStudent }) => {
     const [sortConfig, setSortConfig] = useState<{ key: SortableKeys; direction: 'ascending' | 'descending' }>({ key: 'lastName', direction: 'ascending' });
@@ -66,26 +68,26 @@ const StudentListView: React.FC<StudentListViewProps> = ({ students, onSelectStu
     };
 
     const SortableHeader: React.FC<{ sortKey: SortableKeys; children: React.ReactNode }> = ({ sortKey, children }) => (
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onClick={() => requestSort(sortKey)}>
+        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer" onClick={() => requestSort(sortKey)}>
              <div className="flex items-center">
                 {children}
                 {sortConfig?.key === sortKey && (
-                    <span className="ml-2">{sortConfig.direction === 'ascending' ? '▲' : '▼'}</span>
+                    <span className="ml-2 dark:text-gray-300">{sortConfig.direction === 'ascending' ? '▲' : '▼'}</span>
                 )}
             </div>
         </th>
     );
 
     const YesNoBadge: React.FC<{ value: boolean }> = ({ value }) => (
-        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${value ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${value ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
             {value ? 'Yes' : 'No'}
         </span>
     );
 
     return (
-        <div className="overflow-x-auto border border-gray-200 rounded-lg">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+        <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
                         <SortableHeader sortKey="lastName">Name</SortableHeader>
                         <SortableHeader sortKey="atsiStatus">ATSI</SortableHeader>
@@ -94,14 +96,14 @@ const StudentListView: React.FC<StudentListViewProps> = ({ students, onSelectStu
                         <SortableHeader sortKey="hpgeStatus">HPGE Status</SortableHeader>
                     </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                     {sortedStudents.map(student => (
-                        <tr key={student.studentId} onClick={() => onSelectStudent(student)} className="hover:bg-gray-100 cursor-pointer">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{student.lastName}, {student.firstName}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.profile.atsiStatus}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><YesNoBadge value={student.wellbeing.hasLearningPlan} /></td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><YesNoBadge value={student.wellbeing.hasBehaviourPlan} /></td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{student.hpge.status}</td>
+                        <tr key={student.studentId} onClick={() => onSelectStudent(student)} className="hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-200">{student.lastName}, {student.firstName}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{student.profile.atsiStatus}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"><YesNoBadge value={student.wellbeing.hasLearningPlan} /></td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"><YesNoBadge value={student.wellbeing.hasBehaviourPlan} /></td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{student.hpge.status}</td>
                         </tr>
                     ))}
                 </tbody>

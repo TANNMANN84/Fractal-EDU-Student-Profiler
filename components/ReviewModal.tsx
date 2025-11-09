@@ -170,12 +170,14 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ packageData, onClose }) => {
         <>
             <style>{`
                 @media print {
+                    body * { visibility: hidden; }
+                    .print-area, .print-area * { visibility: visible; }
+                    .print-area { position: absolute; left: 0; top: 0; width: 100%; }
                     .no-print { display: none !important; }
-                    .print-area { display: block !important; }
                     @page { size: A4; margin: 1.5cm; }
                 }
             `}</style>
-            <div className="hidden print-area">
+            <div className="print-area">
                 <h1 style={{fontSize: '24px', marginBottom: '20px'}}>Monitoring Review Snapshot</h1>
                 <div style={{fontSize: '12px', marginBottom: '20px'}}>
                     <p><strong>Class Name:</strong> {packageData.classData.className}</p>
@@ -210,6 +212,46 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ packageData, onClose }) => {
                          <li key={item.label}><strong>{item.label}:</strong> {item.value || 'N/A'}</li>
                      ))}
                  </ul>
+                 <h2 style={{fontSize: '18px', marginTop: '20px', marginBottom: '10px', pageBreakBefore: 'always'}}>Student Profiler Snapshot</h2>
+                 <table style={{width: '100%', borderCollapse: 'collapse', fontSize: '10px'}}>
+                    <thead style={{backgroundColor: '#eee'}}>
+                        <tr>
+                            <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'left'}}>Student Name</th>
+                            <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}} title="Wellbeing Notes">Wellbeing</th>
+                            <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}} title="Evidence Logs">Evidence</th>
+                            <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}} title="Work Samples">Samples</th>
+                            <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}} title="Differentiation Records">Diff.</th>
+                            <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}} title="Year 7 Reading">Y7 Read</th>
+                            <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}} title="Year 7 Writing">Y7 Write</th>
+                            <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}} title="Year 7 Numeracy">Y7 Num</th>
+                            {year9Applicable && <>
+                                <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}} title="Year 9 Reading">Y9 Read</th>
+                                <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}} title="Year 9 Writing">Y9 Write</th>
+                                <th style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}} title="Year 9 Numeracy">Y9 Num</th>
+                            </>}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {packageData.profilerSnapshot.map(s => (
+                            <tr key={s.studentId}>
+                                <td style={{border: '1px solid #ddd', padding: '4px'}}>{s.lastName}, {s.firstName}</td>
+                                <td style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}}>{s.hasWellbeingNotes ? '✓' : '-'}</td>
+                                <td style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}}>{s.hasEvidenceLogs ? '✓' : '-'}</td>
+                                <td style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}}>{s.hasWorkSamples ? '✓' : '-'}</td>
+                                <td style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}}>{s.hasDifferentiation ? '✓' : '-'}</td>
+                                <td style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}}>{s.naplan.year7.reading.charAt(0)}</td>
+                                <td style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}}>{s.naplan.year7.writing.charAt(0)}</td>
+                                <td style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}}>{s.naplan.year7.numeracy.charAt(0)}</td>
+                                {year9Applicable && <>
+                                    <td style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}}>{s.naplan.year9.reading.charAt(0)}</td>
+                                    <td style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}}>{s.naplan.year9.writing.charAt(0)}</td>
+                                    <td style={{border: '1px solid #ddd', padding: '4px', textAlign: 'center'}}>{s.naplan.year9.numeracy.charAt(0)}</td>
+                                </>}
+                            </tr>
+                        ))}
+                    </tbody>
+ </table>
+
             </div>
 
             <dialog ref={dialogRef} onClose={handleClose} className="p-0 rounded-lg shadow-xl w-11/12 max-w-6xl backdrop:bg-black backdrop:opacity-50 border border-gray-300 no-print">
