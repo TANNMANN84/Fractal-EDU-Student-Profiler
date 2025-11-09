@@ -130,19 +130,26 @@ const ManagementConsole: React.FC = () => {
                     if (file.name.endsWith('.csv')) {
                         const rows = text.split(/\r\n|\n/);
                         const headers = rows[0].split(',').map(h => h.trim().toLowerCase().replace(/\s/g, ''));
-                        const studentsData = rows.slice(1).map(row => {
+                        const studentsData = rows.slice(1).filter(row => row.trim() !== '').map(row => {
                             const values = row.split(',');
-                            return headers.reduce((obj, header, index) => {
+                            const studentObject = headers.reduce((obj, header, index) => {
                                 const headerMap: { [key: string]: string } = { 'firstname': 'firstName', 'lastname': 'lastName', 'dob': 'dob', 'gender': 'gender', 'atsistatus': 'atsiStatus', 'yeargroup': 'currentYearGroup' };
                                 const key = headerMap[header] || header;
                                 obj[key] = values[index]?.trim();
                                 return obj;
-                            }, {} as any);
+                            }, {} as { [key: string]: string });
+                            return studentObject;
                         });
                         setImportChoicePackage({ type: 'students', data: studentsData });
                     } else {
-                        const importedData = JSON.parse(text);
-                         if (!importedData.dataType) throw new Error('Imported JSON file is missing the required "dataType" property.');
+                        const importedData = JSON.parse(text); // This will be either a backup or a review/transfer package
+                         
+                        // Legacy backup check: If dataType is missing but appData exists, assume it's an old backup.
+                        if (!importedData.dataType && importedData.appData) {
+                            importedData.dataType = 'fullBackup';
+                        } else if (!importedData.dataType) {
+                            throw new Error('Imported JSON file is missing the required "dataType" property.');
+                        }
 
                         switch (importedData.dataType) {
                             case 'reviewPackage':
@@ -274,15 +281,15 @@ const ManagementConsole: React.FC = () => {
         const updatedStudents = [...data.students];
 
         newStudentsData.forEach(newStudentData => {
-            const isDuplicate = data.students.some(s => s.firstName === newStudentData.firstName && s.lastName === newStudentData.lastName && s.profile.dob === newStudentData.dob);
+            const isDuplicate = data.students.some(s => s.firstName === newStudentData.firstName && s.lastName === newStudentData.lastName && s.profile.dob === newStudentData.dob?.trim());
             if (!isDuplicate && newStudentData.firstName && newStudentData.lastName) {
-                const studentProfile = { ...BLANK_STUDENT };
-                studentProfile.firstName = newStudentData.firstName;
-                studentProfile.lastName = newStudentData.lastName;
-                studentProfile.profile.dob = newStudentData.dob || '';
-                studentProfile.profile.gender = newStudentData.gender || '';
-                studentProfile.profile.atsiStatus = newStudentData.atsiStatus || 'Not Stated';
-                studentProfile.profile.currentYearGroup = parseInt(newStudentData.currentYearGroup, 10) || 7;
+                const studentProfile = JSON.parse(JSON.stringify(BLANK_STUDENT));
+                studentProfile.firstName = newStudentData.firstName.trim();
+                studentProfile.lastName = newStudentData.lastName.trim();
+                studentProfile.profile.dob = newStudentData.dob?.trim() || '';
+                studentProfile.profile.gender = newStudentData.gender?.trim() || '';
+                studentProfile.profile.atsiStatus = newStudentData.atsiStatus?.trim() || 'Not Stated';
+                studentProfile.profile.currentYearGroup = newStudentData.currentYearGroup ? parseInt(newStudentData.currentYearGroup, 10) : 7;
                 
                 updatedStudents.push({ ...studentProfile, studentId: `student-${crypto.randomUUID()}`});
                 newStudents++;
