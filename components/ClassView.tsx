@@ -24,7 +24,7 @@ interface ClassViewProps {
   classData: ClassData;
 }
 
-const VIEW_MODES = ["Default Grid", "List View", "Academic View", "Wellbeing/Plans View", "HPGE Profile View", "Seating Plan"];
+const VIEW_MODES = ["Grid View", "List View", "Academic View", "Wellbeing/Plans View", "HPGE Profile View", "Seating Plan"];
 const DATA_POINT_OPTIONS: { [key: string]: string[] } = {
   "Academic View": [
     "NAPLAN Year 7 - Reading", "NAPLAN Year 7 - Writing", "NAPLAN Year 7 - Spelling", "NAPLAN Year 7 - Grammar & Punctuation", "NAPLAN Year 7 - Numeracy",
