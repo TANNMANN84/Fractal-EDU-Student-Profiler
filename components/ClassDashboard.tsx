@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import ClassView from './ClassView';
+import { BLANK_SEATING_CHART, DEFAULT_SEATING_PLAN_NAME } from '../constants';
 
 const ClassDashboard: React.FC = () => {
   const { data } = useAppContext();
@@ -10,7 +11,23 @@ const ClassDashboard: React.FC = () => {
     return data?.classes.filter(c => c.status === 'Active') ?? [];
   }, [data?.classes]);
 
-  const selectedClass = activeClasses.find(c => c.classId === selectedClassId);
+  const selectedClass = useMemo(() => {
+    const foundClass = activeClasses.find(c => c.classId === selectedClassId);
+    if (foundClass && (!foundClass.seatingCharts || Object.keys(foundClass.seatingCharts).length === 0)) {
+      return {
+        ...foundClass,
+        seatingCharts: { [DEFAULT_SEATING_PLAN_NAME]: BLANK_SEATING_CHART },
+        activeSeatingChartName: DEFAULT_SEATING_PLAN_NAME,
+      };
+    }
+    if (foundClass && !foundClass.activeSeatingChartName) {
+      return {
+        ...foundClass,
+        activeSeatingChartName: Object.keys(foundClass.seatingCharts!)[0] || DEFAULT_SEATING_PLAN_NAME,
+      }
+    }
+    return foundClass;
+  }, [activeClasses, selectedClassId]);
 
   // Effect to handle selection logic
   useEffect(() => {

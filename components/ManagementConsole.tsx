@@ -3,15 +3,15 @@ import { useAppContext } from '../contexts/AppContext';
 import type { AppData, Student, ClassData, ReviewPackage, Teacher, BackupFile, StudentTransferPackage, ClassTransferPackage } from '../types';
 import AddStudentModal from './AddStudentModal';
 import CreateClassModal from './CreateClassModal';
+import ImportChoiceModal from './ImportChoiceModal';
 import ManageStudentsModal from './ManageStudentsModal';
 import ClassAdminModal from './ClassAdminModal';
 import RolloverModal from './RolloverModal';
 import ReviewModal from './ReviewModal';
-import ImportChoiceModal from './ImportChoiceModal';
-import ConfirmationModal from './ConfirmationModal';
 import ThemeToggle from './ThemeToggle';
-import { BLANK_STUDENT } from '../constants';
+import { BLANK_STUDENT, BLANK_SEATING_CHART, DEFAULT_SEATING_PLAN_NAME } from '../constants';
 import { storageService } from '../services/storageService';
+import ConfirmationModal from './ConfirmationModal';
 
 
 type TabName = 'Profile' | 'Students' | 'Classes' | 'System';
@@ -66,7 +66,7 @@ const ManagementConsole: React.FC = () => {
 
     const handleCreateClass = (newClassData: { className: string; teacher: string }) => {
         if (!data) return;
-        const newClass: ClassData = { ...newClassData, classId: `class-${crypto.randomUUID()}`, studentIds: [], status: 'Active' };
+        const newClass: ClassData = { ...newClassData, classId: `class-${crypto.randomUUID()}`, studentIds: [], status: 'Active', seatingCharts: { [DEFAULT_SEATING_PLAN_NAME]: BLANK_SEATING_CHART }, activeSeatingChartName: DEFAULT_SEATING_PLAN_NAME };
         saveData({ ...data, classes: [...data.classes, newClass] });
     };
     
@@ -276,32 +276,53 @@ const ManagementConsole: React.FC = () => {
     };
     
     const handleMergeStudents = (newStudentsData: any[]) => {
-        if (!data) return;
-        let newStudents = 0;
-        let skipped = 0;
-        const updatedStudents = [...data.students];
+      if (!data) return;
+      let addedCount = 0;
+      let updatedCount = 0;
+      // Create a map for efficient lookup of existing students by a unique key
+      const currentStudentsMap = new Map(data.students.map(s => [`${s.firstName.toLowerCase()}-${s.lastName.toLowerCase()}-${s.profile.dob}`, s]));
+      const updatedStudentsList = [...data.students]; // Start with a copy of current students
 
-        newStudentsData.forEach(newStudentData => {
-            const isDuplicate = data.students.some(s => s.firstName === newStudentData.firstName && s.lastName === newStudentData.lastName && s.profile.dob === newStudentData.dob?.trim());
-            if (!isDuplicate && newStudentData.firstName && newStudentData.lastName) {
-                const studentProfile = JSON.parse(JSON.stringify(BLANK_STUDENT));
-                studentProfile.firstName = newStudentData.firstName.trim();
-                studentProfile.lastName = newStudentData.lastName.trim();
-                studentProfile.profile.dob = newStudentData.dob?.trim() || '';
-                studentProfile.profile.gender = newStudentData.gender?.trim() || '';
-                studentProfile.profile.atsiStatus = newStudentData.atsiStatus?.trim() || 'Not Stated';
-                studentProfile.profile.currentYearGroup = newStudentData.currentYearGroup ? parseInt(newStudentData.currentYearGroup, 10) : 7;
-                
-                updatedStudents.push({ ...studentProfile, studentId: `student-${crypto.randomUUID()}`});
-                newStudents++;
-            } else {
-                skipped++;
-            }
-        });
+      newStudentsData.forEach(newStudentData => {
+        // Create a unique key for comparison
+        const key = `${newStudentData.firstName?.toLowerCase()}-${newStudentData.lastName?.toLowerCase()}-${newStudentData.dob?.trim()}`;
+        const existingStudent = currentStudentsMap.get(key) as Student | undefined;
 
-        saveData({ ...data, students: updatedStudents });
-        alert(`Import complete. Added ${newStudents} new students. Skipped ${skipped} duplicate or invalid entries.`);
-        setImportChoicePackage(null);
+        // Prepare the new student's profile data from the CSV
+        const studentProfile: Student = JSON.parse(JSON.stringify(BLANK_STUDENT));
+        studentProfile.firstName = newStudentData.firstName.trim();
+        studentProfile.lastName = newStudentData.lastName.trim();
+        studentProfile.profile.dob = newStudentData.dob?.trim() || '';
+
+        const genderValue = (newStudentData.gender || '').trim().toUpperCase();
+        if (genderValue === 'MALE') {
+          studentProfile.profile.gender = 'M';
+        } else if (genderValue === 'FEMALE') {
+          studentProfile.profile.gender = 'F';
+        } else {
+          studentProfile.profile.gender = genderValue;
+        }
+
+        studentProfile.profile.atsiStatus = newStudentData.atsiStatus?.trim() || 'Not Stated';
+        studentProfile.profile.currentYearGroup = newStudentData.currentYearGroup ? parseInt(newStudentData.currentYearGroup, 10) : 7;
+        
+        // If a student with the same identifying details exists, update them
+        if (existingStudent) {
+          // Update only the profile fields that are present in the CSV
+          if (existingStudent) {
+            Object.assign(existingStudent.profile, studentProfile.profile);
+          }
+          updatedCount++;
+        } else {
+          // Otherwise, add a new student
+          updatedStudentsList.push({ ...studentProfile, studentId: `student-${crypto.randomUUID()}` });
+          addedCount++;
+        }
+      });
+
+      saveData({ ...data, students: updatedStudentsList });
+      alert(`Import complete. Added ${addedCount} new students. Updated ${updatedCount} existing students.`);
+      setImportChoicePackage(null);
     };
 
     const handleDownloadTemplate = () => {

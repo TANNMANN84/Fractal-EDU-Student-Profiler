@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../contexts/AppContext';
+import { BLANK_SEATING_CHART, DEFAULT_SEATING_PLAN_NAME } from '../constants';
 
 interface CreateClassModalProps {
   onClose: () => void;

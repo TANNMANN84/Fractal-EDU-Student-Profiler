@@ -52,12 +52,12 @@ const SortableStudentCard: React.FC<{student: Student, isRemoveMode: boolean, on
         transition,
     } = useSortable({ id: student.studentId });
 
-    const style = {
+    const style: React.CSSProperties = {
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
         transition,
     };
-
-    return <div ref={setNodeRef} style={style} {...attributes} {...listeners}><StudentCard student={student} isRemoveMode={isRemoveMode} onClick={onCardClick} onRemoveFromClass={onRemoveClick} /></div>
+    
+    return <div ref={setNodeRef} style={style} {...attributes}><StudentCard student={student} isRemoveMode={isRemoveMode} onClick={onCardClick} onRemoveFromClass={onRemoveClick} listeners={listeners} /></div>
 };
 
 const ClassView: React.FC<ClassViewProps> = ({ classData }) => {
@@ -218,7 +218,7 @@ const ClassView: React.FC<ClassViewProps> = ({ classData }) => {
         case 'Default Grid':
             return (
                 <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-                    <SortableContext items={sortedStudentsInClass.map(s => s.studentId)} strategy={verticalListSortingStrategy}>
+                    <SortableContext items={sortedStudentsInClass.map(s => s.studentId)} strategy={verticalListSortingStrategy} disabled={sortOrder !== 'custom'}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {sortedStudentsInClass.map((student) => (
                                 <SortableStudentCard
@@ -235,8 +235,8 @@ const ClassView: React.FC<ClassViewProps> = ({ classData }) => {
             );
         case 'List View':
             return <StudentListView students={sortedStudentsInClass} onSelectStudent={setSelectedStudent} />;
-        case 'Seating Plan':
-            return <SeatingPlanView students={studentsInClass} classData={classData} />;
+        case 'Seating Plan': // Pass all seating charts and the active one
+            return <SeatingPlanView students={studentsInClass} classData={classData} />; 
         // For Academic, Wellbeing, HPGE views
         default:
             if (dataPoint) {

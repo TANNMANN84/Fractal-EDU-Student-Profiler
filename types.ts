@@ -30,7 +30,8 @@ export interface ClassData {
   studentIds: string[];
   status: 'Active' | 'Archived';
   studentSortOrder?: string[]; // Optional: For custom drag-and-drop ordering
-  seatingChart?: SeatingChart;
+  seatingCharts?: { [name: string]: SeatingChart };
+  activeSeatingChartName?: string;
 }
 
 export interface SeatingChart {

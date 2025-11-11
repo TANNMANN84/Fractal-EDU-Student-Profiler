@@ -139,3 +139,5 @@ export const BLANK_SEATING_CHART = {
     seatsPerRow: 6,
     arrangement: Array(5).fill(null).map(() => Array(6).fill(null)),
 };
+
+export const DEFAULT_SEATING_PLAN_NAME = 'Default Plan';
